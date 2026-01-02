@@ -70,9 +70,6 @@ button {
   background:#5e9c8c;
 }
 
-button:hover {
-  background:#5e9c8c;  /* mismo hover que Wind Component */
-}
 
 .favorites {
   margin-top:14px;
@@ -180,8 +177,10 @@ button:hover {
   <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
 
   <div class="buttons">
-    <button class="primary-btn" onclick="getMetar()">METAR</button>
-    <button class="primary-btn" onclick="getTaf()">TAF</button>
+  <button class="primary-btn" onclick="getMetar()">METAR</button>
+  <button class="primary-btn" onclick="getTaf()">TAF</button>
+</div>
+
 
 
   <div id="favorites" class="favorites"></div>
