@@ -98,6 +98,15 @@ button {
   white-space:pre-wrap;
   display:none;
 }
+.wind-auto {
+  margin-top:12px;
+  padding:12px;
+  border-radius:10px;
+  background:#f1f8fb;
+  border:1px dashed #8ecae6;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:14px;
+}
 
 .zulu {
   color:#1f6fb2; /* azul aviación */
@@ -335,8 +344,14 @@ function decodeTaf(raw){
 
   return html+`</div>`;
 }
+function hideWindAuto(){
+  windAutoDiv.style.display = "none";
+  windAutoDiv.innerHTML = "";
+}
 
 renderFavorites();
+const windAutoDiv = document.getElementById("windAuto");
+
 </script>
 
 </body>
