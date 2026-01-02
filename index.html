@@ -106,6 +106,27 @@ button {
   color:#4a6a78;
 }
 
+/* 🔹 Wind Component button (secondary) */
+.wind-box {
+  margin-top:10px;
+  text-align:center;
+  display:none;
+}
+
+.wind-btn {
+  padding:8px 14px;
+  font-size:14px;
+  border-radius:8px;
+  border:1px solid #8ecae6;
+  background:#ffffff;
+  color:#355f5b;
+  cursor:pointer;
+}
+
+.wind-btn:hover {
+  background:#eaf4fa;
+}
+
 /* PDF link */
 .pdf-link {
   display: inline-block;
@@ -145,7 +166,15 @@ button {
   </div>
 
   <div id="favorites" class="favorites"></div>
+
   <div id="result" class="result-box"></div>
+
+  <!-- Wind Component (secondary action) -->
+  <div id="windBox" class="wind-box">
+    <button class="wind-btn" onclick="openWindComponent()">
+      Wind Component
+    </button>
+  </div>
 
   <div class="footer">
     <a href="metar_taf_codes.pdf" target="_blank" class="pdf-link">
@@ -165,12 +194,12 @@ const USE_PROXY = true;
 const NOAA_METAR_URL = "https://tgftp.nws.noaa.gov/data/observations/metar/stations/";
 const NOAA_TAF_URL   = "https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/";
 const PROXY_URL = "https://api.allorigins.win/raw?url=";
-
 /* ===================================================== */
 
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 const favoritesDiv = document.getElementById("favorites");
+const windBox = document.getElementById("windBox");
 
 let lastICAO = null;
 let lastType = null;
@@ -204,6 +233,7 @@ function renderFavorites(){
 function showHint(){
   resultBox.style.display="block";
   resultBox.innerHTML=`<span class="hint">ICAO selected. Please choose METAR or TAF.</span>`;
+  windBox.style.display="none";
 }
 
 /* ---------- AUTO REFRESH ---------- */
@@ -227,6 +257,7 @@ async function getMetar(){
 
   resultBox.style.display="block";
   resultBox.textContent="Loading METAR...";
+  windBox.style.display="none";
 
   const nocache = Date.now();
   const sourceUrl = `${NOAA_METAR_URL}${icao}.TXT`;
@@ -243,6 +274,9 @@ async function getMetar(){
   const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
 
   resultBox.innerHTML = `<strong>RAW METAR</strong>\n${highlighted}\n` + decodeMetar(raw);
+
+  // show Wind Component button
+  windBox.style.display = "block";
 }
 
 /* ---------- DECODE METAR ---------- */
@@ -269,6 +303,7 @@ async function getTaf(){
 
   resultBox.style.display="block";
   resultBox.textContent="Loading TAF...";
+  windBox.style.display="none";
 
   const nocache = Date.now();
   const sourceUrl = `${NOAA_TAF_URL}${icao}.TXT`;
@@ -298,6 +333,11 @@ function decodeTaf(raw){
   if(vis) html+=`👁️ Visibility: ${vis[1]}<br>`;
 
   return html+`</div>`;
+}
+
+/* ---------- WIND COMPONENT (placeholder) ---------- */
+function openWindComponent(){
+  alert("Wind Component coming next ✈️");
 }
 
 renderFavorites();
