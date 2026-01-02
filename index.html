@@ -157,6 +157,17 @@ button {
 </div>
 
 <script>
+/* =====================================================
+   DATA SOURCE CONFIG (future-proof)
+   ===================================================== */
+const USE_PROXY = true;
+
+const NOAA_METAR_URL = "https://tgftp.nws.noaa.gov/data/observations/metar/stations/";
+const NOAA_TAF_URL   = "https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/";
+const PROXY_URL = "https://api.allorigins.win/raw?url=";
+
+/* ===================================================== */
+
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 const favoritesDiv = document.getElementById("favorites");
@@ -207,7 +218,7 @@ function startAutoRefresh(){
 
 /* ---------- METAR ---------- */
 async function getMetar(){
-  const icao=icaoInput.value.trim().toUpperCase();
+  const icao = icaoInput.value.trim().toUpperCase();
   if(icao.length!==4) return;
 
   lastICAO = icao;
@@ -218,19 +229,20 @@ async function getMetar(){
   resultBox.textContent="Loading METAR...";
 
   const nocache = Date.now();
-  const url=`https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`;
-  const r=await fetch(
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&t=${nocache}`,
-    { cache:"no-store" }
-  );
+  const sourceUrl = `${NOAA_METAR_URL}${icao}.TXT`;
+  const fetchUrl = USE_PROXY
+    ? `${PROXY_URL}${encodeURIComponent(sourceUrl)}&t=${nocache}`
+    : sourceUrl;
 
-  const raw=(await r.text()).trim().split("\n").pop();
+  const r = await fetch(fetchUrl, { cache:"no-store" });
+  const raw = (await r.text()).trim().split("\n").pop();
+
   saveFavorite(icao);
 
   const zulu = raw.match(/\d{6}Z/);
   const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
 
-  resultBox.innerHTML=`<strong>RAW METAR</strong>\n${highlighted}\n`+decodeMetar(raw);
+  resultBox.innerHTML = `<strong>RAW METAR</strong>\n${highlighted}\n` + decodeMetar(raw);
 }
 
 /* ---------- DECODE METAR ---------- */
@@ -248,7 +260,7 @@ function decodeMetar(raw){
 
 /* ---------- TAF ---------- */
 async function getTaf(){
-  const icao=icaoInput.value.trim().toUpperCase();
+  const icao = icaoInput.value.trim().toUpperCase();
   if(icao.length!==4) return;
 
   lastICAO = icao;
@@ -259,19 +271,20 @@ async function getTaf(){
   resultBox.textContent="Loading TAF...";
 
   const nocache = Date.now();
-  const url=`https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/${icao}.TXT`;
-  const r=await fetch(
-    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&t=${nocache}`,
-    { cache:"no-store" }
-  );
+  const sourceUrl = `${NOAA_TAF_URL}${icao}.TXT`;
+  const fetchUrl = USE_PROXY
+    ? `${PROXY_URL}${encodeURIComponent(sourceUrl)}&t=${nocache}`
+    : sourceUrl;
 
-  const raw=(await r.text()).trim().split("\n").slice(1).join(" ");
+  const r = await fetch(fetchUrl, { cache:"no-store" });
+  const raw = (await r.text()).trim().split("\n").slice(1).join(" ");
+
   saveFavorite(icao);
 
   const zulu = raw.match(/\d{6}Z/);
   const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
 
-  resultBox.innerHTML=`<strong>RAW TAF</strong>\n${highlighted}\n`+decodeTaf(raw);
+  resultBox.innerHTML = `<strong>RAW TAF</strong>\n${highlighted}\n` + decodeTaf(raw);
 }
 
 /* ---------- DECODE TAF ---------- */
