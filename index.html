@@ -55,6 +55,21 @@ button {
   background:#6fa89a;
   color:white;
 }
+/* Primary action buttons */
+.primary-btn {
+  padding:13px;
+  font-size:15px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#6fa89a;
+  color:white;
+}
+
+.primary-btn:hover {
+  background:#5e9c8c;
+}
+
 button:hover {
   background:#5e9c8c;  /* mismo hover que Wind Component */
 }
@@ -165,14 +180,15 @@ button:hover {
   <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
 
   <div class="buttons">
-    <button onclick="getMetar()">METAR</button>
-    <button onclick="getTaf()">TAF</button>
-  </div>
+    <button class="primary-btn" onclick="getMetar()">METAR</button>
+    <button class="primary-btn" onclick="getTaf()">TAF</button>
+
 
   <div id="favorites" class="favorites"></div>
   <div id="result" class="result-box"></div>
   <div class="wind-box">
-  <button class="wind-btn" onclick="alert('Wind Component coming next ✈️')">
+  <button class="primary-btn wind-btn" onclick="alert('Wind Component coming next ✈️')">
+
     Wind Component
   </button>
 </div>
