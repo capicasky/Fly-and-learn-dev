@@ -14,7 +14,6 @@
 <title>Fly and Learn – Aviation Tools</title>
 
 <style>
-/* === estilos SIN cambios === */
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
@@ -106,6 +105,11 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   padding:4px 8px;
   border-radius:6px;
 }
+
+/* === WIND COMPONENT COLORS === */
+.hw { color:#1f6fb2; font-weight:bold; }        /* Headwind */
+.tw-warn { color:#e6a700; font-weight:bold; }  /* Tailwind ≤ 5 kt */
+.tw-danger { color:#c0392b; font-weight:bold;} /* Tailwind > 5 kt */
 </style>
 </head>
 
@@ -141,32 +145,11 @@ const favoritesDiv = document.getElementById("favorites");
 
 /* === WIND COMPONENT AUTO – DATA === */
 const airportRunways = {
-  MROC: { runways:[{id:"07",h:70},{id:"25",h:250}] },
-  MRPV: { runways:[{id:"10",h:100},{id:"28",h:280}] },
-  MRLB: { runways:[{id:"07",h:70},{id:"25",h:250}] },
-  MRLM: { runways:[{id:"05",h:50},{id:"23",h:230}] }
+  MROC:{runways:[{id:"07",h:70},{id:"25",h:250}]},
+  MRPV:{runways:[{id:"10",h:100},{id:"28",h:280}]},
+  MRLB:{runways:[{id:"07",h:70},{id:"25",h:250}]},
+  MRLM:{runways:[{id:"05",h:50},{id:"23",h:230}]}
 };
-
-/* ---------- FAVORITES ---------- */
-function saveFavorite(icao){
-  let favs = JSON.parse(localStorage.getItem("favs")) || [];
-  if(!favs.includes(icao)){
-    favs.unshift(icao);
-    if(favs.length>5) favs.pop();
-    localStorage.setItem("favs", JSON.stringify(favs));
-  }
-  renderFavorites();
-}
-function renderFavorites(){
-  favoritesDiv.innerHTML="";
-  (JSON.parse(localStorage.getItem("favs"))||[]).forEach(code=>{
-    const b=document.createElement("div");
-    b.className="fav-btn";
-    b.textContent=code;
-    b.onclick=()=>{ icaoInput.value=code; };
-    favoritesDiv.appendChild(b);
-  });
-}
 
 /* ---------- METAR ---------- */
 async function getMetar(){
@@ -180,17 +163,13 @@ async function getMetar(){
   const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
   const raw=(await r.text()).trim().split("\n").pop();
 
-  saveFavorite(icao);
-
   const zulu=raw.match(/\d{6}Z/);
   const highlighted=zulu?raw.replace(zulu[0],`<span class="zulu">${zulu[0]}</span>`):raw;
 
-  let html = `<strong>RAW METAR</strong>\n${highlighted}\n` + decodeMetar(raw);
+  let html=`<strong>RAW METAR</strong>\n${highlighted}\n`+decodeMetar(raw);
+  html+=buildWindComponent(raw,icao);
 
-  /* === WIND COMPONENT AUTO === */
-  html += buildWindComponent(raw, icao);
-
-  resultBox.innerHTML = html;
+  resultBox.innerHTML=html;
 }
 
 /* ---------- DECODE METAR ---------- */
@@ -202,19 +181,11 @@ function decodeMetar(raw){
     if(wind[3]) html+=` (gust ${wind[3].slice(1)} kt)`;
     html+=`<br>`;
   }
-  const vis=raw.match(/ (\d{1,2})SM/);
-  if(vis) html+=`👁️ Visibility: ${vis[1]} SM<br>`;
-  const clouds=raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds) html+=`☁️ Clouds: ${clouds.join(", ")}<br>`;
-  const temp=raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp) html+=`🌡️ Temp/Dew: ${temp[1].replace("M","-")}°C / ${temp[2].replace("M","-")}°C<br>`;
-  const alt=raw.match(/A(\d{4})/);
-  if(alt) html+=`🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
   return html+`</div>`;
 }
 
-/* === WIND COMPONENT AUTO – LOGIC === */
-function buildWindComponent(raw, icao){
+/* === WIND COMPONENT AUTO (ORDER + COLORS) === */
+function buildWindComponent(raw,icao){
   if(!airportRunways[icao]) return "";
   const wind=raw.match(/(\d{3})(\d{2})(G\d{2})?KT/);
   if(!wind) return "";
@@ -223,7 +194,7 @@ function buildWindComponent(raw, icao){
   const windSpd=parseInt(wind[2]);
   const gust=wind[3]?wind[3].slice(1):null;
 
-  let html=`<div class="decoded"><div class="decoded-title">Wind Component (Auto)</div>`;
+  let results=[];
 
   airportRunways[icao].runways.forEach(r=>{
     let diff=Math.abs(windDir-r.h);
@@ -235,42 +206,37 @@ function buildWindComponent(raw, icao){
     let rel=windDir-r.h; if(rel<0) rel+=360;
     let side=rel>180?"LEFT":"RIGHT";
 
-    html+=`RWY ${r.id}<br>`;
-    if(diff<=90) html+=`Headwind: ${Math.abs(head)} kt<br>`;
-    else html+=`Tailwind: ${Math.abs(head)} kt<br>`;
-    html+=cross<2?`Crosswind: minimal<br>`:`Crosswind: ${cross} kt (from ${side})<br>`;
-    html+=`<br>`;
+    results.push({
+      rwy:r.id,
+      isHead: diff<=90,
+      headVal: Math.abs(head),
+      crossVal: cross,
+      side: side
+    });
+  });
+
+  /* Ordenar: Headwind primero */
+  results.sort((a,b)=> (b.isHead - a.isHead));
+
+  let html=`<div class="decoded"><div class="decoded-title">Wind Component (Auto)</div>`;
+
+  results.forEach(r=>{
+    html+=`RWY ${r.rwy}<br>`;
+    if(r.isHead){
+      html+=`<span class="hw">Headwind</span>: ${r.headVal} kt<br>`;
+    } else {
+      const twClass = r.headVal>5 ? "tw-danger":"tw-warn";
+      html+=`<span class="${twClass}">Tailwind</span>: ${r.headVal} kt<br>`;
+    }
+    html+= r.crossVal<2
+      ? `Crosswind: minimal<br><br>`
+      : `Crosswind: ${r.crossVal} kt (from ${r.side})<br><br>`;
   });
 
   if(gust) html+=`Note: Gusts up to ${gust} kt<br>`;
   html+=`<small>For training purposes only</small></div>`;
   return html;
 }
-
-/* ---------- TAF ---------- */
-async function getTaf(){
-  const icao=icaoInput.value.trim().toUpperCase();
-  if(icao.length!==4) return;
-  resultBox.style.display="block";
-  resultBox.textContent="Loading TAF...";
-  const url=`https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/${icao}.TXT`;
-  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw=(await r.text()).trim().split("\n").slice(1).join(" ");
-  saveFavorite(icao);
-  resultBox.innerHTML=`<strong>RAW TAF</strong>\n${raw}\n`+decodeTaf(raw);
-}
-
-/* ---------- DECODE TAF ---------- */
-function decodeTaf(raw){
-  let html=`<div class="decoded"><div class="decoded-title">Decoded TAF (training)</div>`;
-  const wind=raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind) html+=`🌬️ Base wind: ${wind[1]}° ${wind[2]} kt<br>`;
-  const validity=raw.match(/(\d{4})\/(\d{4})/);
-  if(validity) html+=`⏱️ Validity: ${validity[1]} to ${validity[2]} UTC<br>`;
-  return html+`</div>`;
-}
-
-renderFavorites();
 </script>
 
 </body>
