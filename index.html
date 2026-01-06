@@ -289,8 +289,9 @@ function decodeTaf(raw){
 
 function buildWindComponent(raw, icao){
   if(!airportRunways[icao]) return "";
-  const w = raw.match(/(\d{3})(\d{2,3})KT/);
-  if(!w) return "";
+  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
+
+ if(!w) return "";
 
   const windDir = parseInt(w[1]);
   const windSpd = parseInt(w[2]);
