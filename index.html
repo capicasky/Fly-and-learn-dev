@@ -246,7 +246,10 @@ window.getTaf = async function(){
     }
 
     resultBox.innerHTML =
-      `<strong>RAW TAF</strong>\n${raw}\n` + decodeTaf(raw);
+  `<div class="section-raw">
+     <strong>RAW TAF</strong><br>${raw}
+   </div>` + decodeTaf(raw);
+
 
   } catch (e) {
     resultBox.textContent = "Error retrieving TAF.";
@@ -292,8 +295,14 @@ function decodeMetar(raw){
 
 /* ===== DECODE TAF ===== */
 function decodeTaf(raw){
-  let html = `<div class="decoded">
+  let html = `<div class="section-decoded decoded">
     <div class="decoded-title">Decoded TAF</div>`;
+
+  // lógica del TAF (wind, TX, TN)
+
+  return html + `</div>`;
+}
+
 
   // BASE WIND (first occurrence)
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
