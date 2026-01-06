@@ -42,14 +42,17 @@ h1 {
 
 .icao-input {
   width: 100%;
-  height: 42px;
-  padding: 6px 8px;
+  height: 40px;              /* altura cómoda y consistente */
+  padding: 4px 8px;          /* padding controlado */
   font-size: 16px;
+  line-height: 1;            /* CLAVE: evita que crezca */
   text-align: center;
   letter-spacing: 2px;
   border-radius: 10px;
   border: 2px solid #8ecae6;
+  box-sizing: border-box;    /* CLAVE: incluye padding y borde */
 }
+
 
 .buttons {
   display:flex;
