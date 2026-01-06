@@ -73,6 +73,25 @@ h1 {
   background:#6fa89a;
   color:white;
 }
+.buttons-row {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.primary-btn.half {
+  width: 50%;
+}
+
+.buttons-notam {
+  margin-top: 12px;
+  text-align: center;
+}
+
+.primary-btn.notam {
+  width: 70%;
+}
+
 
 .primary-btn:hover { background:#5e9c8c; }
 
@@ -149,10 +168,15 @@ h1 {
 
   <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
 
-  <div class="buttons">
-    <button class="primary-btn" onclick="getMetar()">METAR</button>
-    <button class="primary-btn" onclick="getTaf()">TAF</button>
-  </div>
+  <div class="buttons-row">
+  <button class="primary-btn half" onclick="getMetar()">METAR</button>
+  <button class="primary-btn half" onclick="getTaf()">TAF</button>
+</div>
+
+<div class="buttons-notam">
+  <button class="primary-btn notam">NOTAM</button>
+</div>
+
 
   <div id="result" class="result-box"></div>
 
