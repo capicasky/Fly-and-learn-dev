@@ -288,10 +288,24 @@ function decodeTaf(raw){
 }
 
 function buildWindComponent(raw, icao){
+ function buildWindComponent(raw, icao){
   if(!airportRunways[icao]) return "";
-  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
 
- if(!w) return "";
+  // VARIABLE WIND
+  if(/VRB\d{2,3}KT/.test(raw)){
+    return `
+      <div class="section-wind decoded">
+        <div class="decoded-title">Wind Component</div>
+        🌬️ Variable wind — component not calculated
+        <br><small>Direction is variable</small>
+      </div>
+    `;
+  }
+
+  // FIXED DIRECTION WIND
+  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
+  if(!w) return "";
+
 
   const windDir = parseInt(w[1]);
   const windSpd = parseInt(w[2]);
