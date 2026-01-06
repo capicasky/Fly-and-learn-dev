@@ -178,10 +178,11 @@ window.getMetar = async function(){
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim();
 
-    if(!raw){
-      resultBox.textContent = "No METAR available.";
-      return;
-    }
+if(!raw || raw.startsWith("{")){
+  resultBox.textContent = "METAR not available for this airport at the moment.";
+  return;
+}
+
 
     const zulu = raw.match(/\d{6}Z/);
     const highlighted = zulu
