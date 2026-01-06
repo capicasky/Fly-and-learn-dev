@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -172,6 +173,37 @@ async function getMetar(){
 
   resultBox.innerHTML=html;
 }
+<script>
+/* ---------- TAF ---------- */
+async function getTaf(){
+  const icao = icaoInput.value.trim().toUpperCase();
+  if(icao.length !== 4) return;
+
+  resultBox.style.display = "block";
+  resultBox.innerHTML = "Loading TAF...";
+
+  try {
+    const url = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw`;
+    const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+    const raw = (await r.text()).trim();
+
+    if(!raw){
+      resultBox.innerHTML = "No TAF available for this airport.";
+      return;
+    }
+
+    let html = `<strong>RAW TAF</strong>\n${raw}\n`;
+    html += decodeTaf(raw);
+
+    resultBox.innerHTML = html;
+
+  } catch (err) {
+    resultBox.innerHTML = "Error retrieving TAF. Please try again.";
+    console.error(err);
+  }
+}
+</script>
+
 
 /* ---------- DECODE METAR ---------- */
 function decodeMetar(raw){
@@ -207,6 +239,37 @@ function decodeMetar(raw){
   }
 
   return html + `</div>`;
+}
+
+/* ---------- DECODE TAF ---------- */
+function decodeTaf(raw){
+  let html = `<div class="decoded">
+    <div class="decoded-title">Decoded TAF (Basic)</div>`;
+
+  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
+  if(wind){
+    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
+    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
+    html += `<br>`;
+  }
+
+  const vis = raw.match(/ (\d{1,2})SM/);
+  if(vis){
+    html += `👁️ Visibility: ${vis[1]} SM<br>`;
+  }
+
+  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
+  if(clouds){
+    html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
+  }
+
+  const tempo = raw.match(/TEMPO\s([^=]+)/);
+  if(tempo){
+    html += `⏱️ TEMPO: ${tempo[1]}<br>`;
+  }
+
+  html += `<small>Basic decoding for training purposes</small></div>`;
+  return html;
 }
 
 
