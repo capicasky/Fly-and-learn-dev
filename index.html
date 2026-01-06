@@ -185,58 +185,78 @@ function decodeMetar(raw){
 }
 
 /* === WIND COMPONENT AUTO (ORDER + COLORS) === */
-function buildWindComponent(raw,icao){
+/* === WIND COMPONENT AUTO (ORDER + COLORS) === */
+function buildWindComponent(raw, icao){
   if(!airportRunways[icao]) return "";
-  const wind=raw.match(/(\d{3})(\d{2})(G\d{2})?KT/);
-  if(!wind) return "";
 
-  const windDir=parseInt(wind[1]);
-  const windSpd=parseInt(wind[2]);
-  const gust=wind[3]?wind[3].slice(1):null;
+  // Detect wind (DDD or VRB)
+  const windMatch = raw.match(/(VRB|\d{3})(\d{2})(G\d{2})?KT/);
+  if(!windMatch) return "";
 
-  let results=[];
+  const windDirRaw = windMatch[1];
+  const windSpd = parseInt(windMatch[2]);
+  const gust = windMatch[3] ? windMatch[3].slice(1) : null;
+
+  // ⚠️ Variable wind → no auto calculation
+  if(windDirRaw === "VRB"){
+    let html = `<div class="decoded">
+      <div class="decoded-title">Wind Component (Auto)</div>
+      🌬️ Variable wind reported<br>
+      Automatic wind component not available<br>
+      <small>Use manual calculation if required</small>
+    </div>`;
+    return html;
+  }
+
+  const windDir = parseInt(windDirRaw);
+  let results = [];
 
   airportRunways[icao].runways.forEach(r=>{
-    let diff=Math.abs(windDir-r.h);
-    if(diff>180) diff=360-diff;
+    let diff = Math.abs(windDir - r.h);
+    if(diff > 180) diff = 360 - diff;
 
-    let head=Math.round(windSpd*Math.cos(diff*Math.PI/180));
-    let cross=Math.round(windSpd*Math.sin(diff*Math.PI/180));
+    let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
+    let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
 
-    let rel=windDir-r.h; if(rel<0) rel+=360;
-    let side=rel>180?"LEFT":"RIGHT";
+    let rel = windDir - r.h;
+    if(rel < 0) rel += 360;
+    let side = rel > 180 ? "LEFT" : "RIGHT";
 
     results.push({
-      rwy:r.id,
-      isHead: diff<=90,
+      rwy: r.id,
+      isHead: diff <= 90,
       headVal: Math.abs(head),
       crossVal: cross,
       side: side
     });
   });
 
-  /* Ordenar: Headwind primero */
-  results.sort((a,b)=> (b.isHead - a.isHead));
+  // Headwind first
+  results.sort((a,b) => (b.isHead - a.isHead));
 
-  let html=`<div class="decoded"><div class="decoded-title">Wind Component (Auto)</div>`;
+  let html = `<div class="decoded">
+    <div class="decoded-title">Wind Component (Auto)</div>`;
 
   results.forEach(r=>{
-    html+=`RWY ${r.rwy}<br>`;
+    html += `RWY ${r.rwy}<br>`;
     if(r.isHead){
-      html+=`<span class="hw">Headwind</span>: ${r.headVal} kt<br>`;
+      html += `<span class="hw">Headwind</span>: ${r.headVal} kt<br>`;
     } else {
-      const twClass = r.headVal>5 ? "tw-danger":"tw-warn";
-      html+=`<span class="${twClass}">Tailwind</span>: ${r.headVal} kt<br>`;
+      const twClass = r.headVal > 5 ? "tw-danger" : "tw-warn";
+      html += `<span class="${twClass}">Tailwind</span>: ${r.headVal} kt<br>`;
     }
-    html+= r.crossVal<2
+
+    html += r.crossVal < 2
       ? `Crosswind: minimal<br><br>`
       : `Crosswind: ${r.crossVal} kt (from ${r.side})<br><br>`;
   });
 
-  if(gust) html+=`Note: Gusts up to ${gust} kt<br>`;
-  html+=`<small>For training purposes only</small></div>`;
+  if(gust) html += `Note: Gusts up to ${gust} kt<br>`;
+  html += `<small>For training purposes only</small></div>`;
+
   return html;
 }
+
 </script>
 
 </body>
