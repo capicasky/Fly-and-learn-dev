@@ -228,8 +228,10 @@ window.getTaf = async function(){
 
 /* ===== DECODE METAR ===== */
 function decodeMetar(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
+  let html = `<div class="decoded">
+    <div class="decoded-title">Decoded METAR</div>`;
 
+  // WIND
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
   if(wind){
     html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
@@ -237,28 +239,58 @@ function decodeMetar(raw){
     html += `<br>`;
   }
 
-  const vis = raw.match(/ (\d{1,2})SM/);
-  if(vis) html += `👁️ Visibility: ${vis[1]} SM<br>`;
+  // CLOUDS
+  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
+  if(clouds){
+    html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
+  }
+
+  // TEMP / DEW
+  const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
+  if(temp){
+    const t = temp[1].replace("M","-");
+    const d = temp[2].replace("M","-");
+    html += `🌡️ Temp / Dew: ${t}°C / ${d}°C<br>`;
+  }
+
+  // QNH
+  const qnh = raw.match(/A(\d{4})/);
+  if(qnh){
+    html += `🎚️ QNH: ${(qnh[1]/100).toFixed(2)} inHg<br>`;
+  }
 
   return html + `</div>`;
 }
 
+
 /* ===== DECODE TAF ===== */
 function decodeTaf(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded TAF (Basic)</div>`;
+  let html = `<div class="decoded">
+    <div class="decoded-title">Decoded TAF</div>`;
 
+  // BASE WIND (first occurrence)
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
   if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
+    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
+    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
+    html += `<br>`;
   }
 
-  const tempo = raw.match(/TEMPO\s([^=]+)/);
-  if(tempo){
-    html += `⏱️ TEMPO: ${tempo[1]}<br>`;
+  // MAX TEMP
+  const maxT = raw.match(/TX(M?\d{2})\/\d{4}Z/);
+  if(maxT){
+    html += `🌡️ Max Temp: ${maxT[1].replace("M","-")}°C<br>`;
   }
 
-  return html + `<small>Training use only</small></div>`;
+  // MIN TEMP
+  const minT = raw.match(/TN(M?\d{2})\/\d{4}Z/);
+  if(minT){
+    html += `🌡️ Min Temp: ${minT[1].replace("M","-")}°C<br>`;
+  }
+
+  return html + `<small>Basic TAF decoding</small></div>`;
 }
+
 
 /* ===== WIND COMPONENT ===== */
 function buildWindComponent(raw, icao){
