@@ -118,6 +118,30 @@ h1 {
   margin-top:18px;
   color:#4a6a78;
 }
+ 
+  /* ===== SECCIONES RESULTADO ===== */
+.section-raw {
+  background:#ffffff;
+  border:1px solid #d6e4ec;
+  border-radius:8px;
+  padding:10px;
+  margin-bottom:12px;
+}
+
+.section-decoded {
+  background:#f7fbfd;
+  border-left:4px solid #6fa89a;
+  padding:10px;
+  margin-bottom:12px;
+}
+
+.section-wind {
+  background:#fffaf2;
+  border-left:4px solid #1f6fb2;
+  padding:10px;
+  margin-bottom:6px;
+}
+
 </style>
 </head>
 
@@ -189,7 +213,10 @@ if(!raw || raw.startsWith("{")){
       ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`)
       : raw;
 
-    let html = `<strong>RAW METAR</strong>\n${highlighted}\n`;
+    let html = `<div class="section-raw">
+<strong>RAW METAR</strong><br>${highlighted}
+</div>`;
+
     html += decodeMetar(raw);
     html += buildWindComponent(raw, icao);
 
@@ -228,8 +255,8 @@ window.getTaf = async function(){
 
 /* ===== DECODE METAR ===== */
 function decodeMetar(raw){
-  let html = `<div class="decoded">
-    <div class="decoded-title">Decoded METAR</div>`;
+  let html = `<div class="section-decoded decoded">
+
 
   // WIND
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
@@ -302,8 +329,8 @@ function buildWindComponent(raw, icao){
   const windDir = parseInt(w[1]);
   const windSpd = parseInt(w[2]);
 
-  let html = `<div class="decoded">
-    <div class="decoded-title">Wind Component (Auto)</div>`;
+ let html = `<div class="section-wind decoded">
+
 
   airportRunways[icao].runways.forEach(r=>{
     let diff = Math.abs(windDir - r.h);
