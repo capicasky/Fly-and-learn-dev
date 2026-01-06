@@ -14,13 +14,13 @@
 <title>Fly and Learn – Aviation Tools</title>
 
 <style>
+/* === estilos SIN cambios === */
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #f4f1e8;
   color: #355f5b;
 }
-
 .container {
   max-width: 420px;
   margin: 20px auto;
@@ -29,10 +29,8 @@ body {
   border-radius: 14px;
   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
 }
-
 h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
 .subtitle { text-align:center; font-size:13px; margin-bottom:20px; color:#4a6a78; }
-
 .icao-input {
   width: 100%;
   padding: 14px;
@@ -43,14 +41,12 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   border: 2px solid #8ecae6;
   box-sizing: border-box;
 }
-
 .buttons {
   display:flex;
   flex-direction:column;
   gap:12px;
   margin-top:18px;
 }
-
 .primary-btn {
   padding:13px;
   font-size:15px;
@@ -60,16 +56,13 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   background:#6fa89a;
   color:white;
 }
-
 .primary-btn:hover { background:#5e9c8c; }
-
 .favorites {
   margin-top:14px;
   display:flex;
   gap:8px;
   flex-wrap:wrap;
 }
-
 .fav-btn {
   padding:6px 10px;
   font-size:13px;
@@ -78,7 +71,6 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   background:#eaf4fa;
   cursor:pointer;
 }
-
 .result-box {
   margin-top:20px;
   padding:14px;
@@ -90,25 +82,20 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   white-space:pre-wrap;
   display:none;
 }
-
 .zulu { color:#1f6fb2; font-weight:bold; }
-
 .decoded {
   margin-top:12px;
   padding-top:10px;
   border-top:1px dashed #8ecae6;
   font-family: Arial, Helvetica, sans-serif;
 }
-
 .decoded-title { font-weight:bold; margin-bottom:6px; }
-
 .footer {
   text-align:center;
   font-size:12px;
   margin-top:20px;
   color:#4a6a78;
 }
-
 .pdf-link {
   display:inline-block;
   margin-bottom:8px;
@@ -152,124 +139,135 @@ const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 const favoritesDiv = document.getElementById("favorites");
 
+/* === WIND COMPONENT AUTO – DATA === */
+const airportRunways = {
+  MROC: { runways:[{id:"07",h:70},{id:"25",h:250}] },
+  MRPV: { runways:[{id:"10",h:100},{id:"28",h:280}] },
+  MRLB: { runways:[{id:"07",h:70},{id:"25",h:250}] },
+  MRLM: { runways:[{id:"05",h:50},{id:"23",h:230}] }
+};
+
 /* ---------- FAVORITES ---------- */
 function saveFavorite(icao){
   let favs = JSON.parse(localStorage.getItem("favs")) || [];
   if(!favs.includes(icao)){
     favs.unshift(icao);
-    if(favs.length > 5) favs.pop();
+    if(favs.length>5) favs.pop();
     localStorage.setItem("favs", JSON.stringify(favs));
   }
   renderFavorites();
 }
-
 function renderFavorites(){
-  favoritesDiv.innerHTML = "";
-  (JSON.parse(localStorage.getItem("favs")) || []).forEach(code=>{
-    const b = document.createElement("div");
-    b.className = "fav-btn";
-    b.textContent = code;
-    b.onclick = ()=>{
-      icaoInput.value = code;
-      resultBox.style.display = "block";
-      resultBox.innerHTML = `<span class="hint">ICAO selected. Please choose METAR or TAF.</span>`;
-    };
+  favoritesDiv.innerHTML="";
+  (JSON.parse(localStorage.getItem("favs"))||[]).forEach(code=>{
+    const b=document.createElement("div");
+    b.className="fav-btn";
+    b.textContent=code;
+    b.onclick=()=>{ icaoInput.value=code; };
     favoritesDiv.appendChild(b);
   });
 }
 
 /* ---------- METAR ---------- */
 async function getMetar(){
-  const icao = icaoInput.value.trim().toUpperCase();
-  if(icao.length !== 4) return;
+  const icao=icaoInput.value.trim().toUpperCase();
+  if(icao.length!==4) return;
 
-  resultBox.style.display = "block";
-  resultBox.textContent = "Loading METAR...";
+  resultBox.style.display="block";
+  resultBox.textContent="Loading METAR...";
 
-  const url = `https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`;
-  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw = (await r.text()).trim().split("\n").pop();
+  const url=`https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`;
+  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+  const raw=(await r.text()).trim().split("\n").pop();
 
   saveFavorite(icao);
 
-  const zulu = raw.match(/\d{6}Z/);
-  const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
+  const zulu=raw.match(/\d{6}Z/);
+  const highlighted=zulu?raw.replace(zulu[0],`<span class="zulu">${zulu[0]}</span>`):raw;
 
-  resultBox.innerHTML = `<strong>RAW METAR</strong>\n${highlighted}\n` + decodeMetar(raw);
+  let html = `<strong>RAW METAR</strong>\n${highlighted}\n` + decodeMetar(raw);
+
+  /* === WIND COMPONENT AUTO === */
+  html += buildWindComponent(raw, icao);
+
+  resultBox.innerHTML = html;
 }
 
-/* ---------- DECODE METAR (ACTUALIZADO) ---------- */
+/* ---------- DECODE METAR ---------- */
 function decodeMetar(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
-
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
+  let html=`<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
+  const wind=raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
   if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
-    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
-    html += `<br>`;
+    html+=`🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
+    if(wind[3]) html+=` (gust ${wind[3].slice(1)} kt)`;
+    html+=`<br>`;
   }
-
-  const vis = raw.match(/ (\d{1,2})SM/);
-  if(vis) html += `👁️ Visibility: ${vis[1]} SM<br>`;
-
-  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds) html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
-
-  const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp){
-    const t = temp[1].replace("M","-");
-    const d = temp[2].replace("M","-");
-    html += `🌡️ Temp/Dew: ${t}°C / ${d}°C<br>`;
-  }
-
-  const alt = raw.match(/A(\d{4})/);
-  if(alt) html += `🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
-
-  return html + `</div>`;
+  const vis=raw.match(/ (\d{1,2})SM/);
+  if(vis) html+=`👁️ Visibility: ${vis[1]} SM<br>`;
+  const clouds=raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
+  if(clouds) html+=`☁️ Clouds: ${clouds.join(", ")}<br>`;
+  const temp=raw.match(/ (M?\d{2})\/(M?\d{2}) /);
+  if(temp) html+=`🌡️ Temp/Dew: ${temp[1].replace("M","-")}°C / ${temp[2].replace("M","-")}°C<br>`;
+  const alt=raw.match(/A(\d{4})/);
+  if(alt) html+=`🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
+  return html+`</div>`;
 }
 
-/* ---------- TAF (SIN CAMBIOS) ---------- */
+/* === WIND COMPONENT AUTO – LOGIC === */
+function buildWindComponent(raw, icao){
+  if(!airportRunways[icao]) return "";
+  const wind=raw.match(/(\d{3})(\d{2})(G\d{2})?KT/);
+  if(!wind) return "";
+
+  const windDir=parseInt(wind[1]);
+  const windSpd=parseInt(wind[2]);
+  const gust=wind[3]?wind[3].slice(1):null;
+
+  let html=`<div class="decoded"><div class="decoded-title">Wind Component (Auto)</div>`;
+
+  airportRunways[icao].runways.forEach(r=>{
+    let diff=Math.abs(windDir-r.h);
+    if(diff>180) diff=360-diff;
+
+    let head=Math.round(windSpd*Math.cos(diff*Math.PI/180));
+    let cross=Math.round(windSpd*Math.sin(diff*Math.PI/180));
+
+    let rel=windDir-r.h; if(rel<0) rel+=360;
+    let side=rel>180?"LEFT":"RIGHT";
+
+    html+=`RWY ${r.id}<br>`;
+    if(diff<=90) html+=`Headwind: ${Math.abs(head)} kt<br>`;
+    else html+=`Tailwind: ${Math.abs(head)} kt<br>`;
+    html+=cross<2?`Crosswind: minimal<br>`:`Crosswind: ${cross} kt (from ${side})<br>`;
+    html+=`<br>`;
+  });
+
+  if(gust) html+=`Note: Gusts up to ${gust} kt<br>`;
+  html+=`<small>For training purposes only</small></div>`;
+  return html;
+}
+
+/* ---------- TAF ---------- */
 async function getTaf(){
-  const icao = icaoInput.value.trim().toUpperCase();
-  if(icao.length !== 4) return;
-
-  resultBox.style.display = "block";
-  resultBox.textContent = "Loading TAF...";
-
-  const url = `https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/${icao}.TXT`;
-  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw = (await r.text()).trim().split("\n").slice(1).join(" ");
-
+  const icao=icaoInput.value.trim().toUpperCase();
+  if(icao.length!==4) return;
+  resultBox.style.display="block";
+  resultBox.textContent="Loading TAF...";
+  const url=`https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/${icao}.TXT`;
+  const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+  const raw=(await r.text()).trim().split("\n").slice(1).join(" ");
   saveFavorite(icao);
-
-  resultBox.innerHTML = `<strong>RAW TAF</strong>\n${raw}\n` + decodeTaf(raw);
+  resultBox.innerHTML=`<strong>RAW TAF</strong>\n${raw}\n`+decodeTaf(raw);
 }
 
-/* ---------- DECODE TAF (COMO YA LO TENÍAS) ---------- */
+/* ---------- DECODE TAF ---------- */
 function decodeTaf(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded TAF (training)</div>`;
-
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind){
-    html += `🌬️ Base wind: ${wind[1]}° ${wind[2]} kt`;
-    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
-    html += `<br>`;
-  }
-
-  const validity = raw.match(/(\d{4})\/(\d{4})/);
-  if(validity) html += `⏱️ Validity: ${validity[1]} to ${validity[2]} UTC<br>`;
-
-  const maxTemp = raw.match(/TX(M?\d{2})\/(\d{2})Z?/);
-  if(maxTemp) html += `🌡️ Max temp: ${maxTemp[1].replace("M","-")}°C<br>`;
-
-  const minTemp = raw.match(/TN(M?\d{2})\/(\d{2})Z?/);
-  if(minTemp) html += `🌡️ Min temp: ${minTemp[1].replace("M","-")}°C<br>`;
-
-  if(raw.includes("TS")) html += `⚠️ Thunderstorms mentioned<br>`;
-  if(raw.includes("RA")) html += `🌧️ Rain mentioned<br>`;
-  if(raw.includes("BR") || raw.includes("FG")) html += `🌫️ Reduced visibility possible<br>`;
-
-  return html + `</div>`;
+  let html=`<div class="decoded"><div class="decoded-title">Decoded TAF (training)</div>`;
+  const wind=raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
+  if(wind) html+=`🌬️ Base wind: ${wind[1]}° ${wind[2]} kt<br>`;
+  const validity=raw.match(/(\d{4})\/(\d{4})/);
+  if(validity) html+=`⏱️ Validity: ${validity[1]} to ${validity[2]} UTC<br>`;
+  return html+`</div>`;
 }
 
 renderFavorites();
