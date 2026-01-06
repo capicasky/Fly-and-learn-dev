@@ -1,16 +1,9 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
-<meta name="apple-mobile-web-app-title" content="Fly and Learn">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="theme-color" content="#f4f1e8">
-<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
-<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
 <title>Fly and Learn – Aviation Tools</title>
 
@@ -39,7 +32,6 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   letter-spacing: 2px;
   border-radius: 10px;
   border: 2px solid #8ecae6;
-  box-sizing: border-box;
 }
 .buttons {
   display:flex;
@@ -57,20 +49,6 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   color:white;
 }
 .primary-btn:hover { background:#5e9c8c; }
-.favorites {
-  margin-top:14px;
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-}
-.fav-btn {
-  padding:6px 10px;
-  font-size:13px;
-  border-radius:6px;
-  border:1px solid #8ecae6;
-  background:#eaf4fa;
-  cursor:pointer;
-}
 .result-box {
   margin-top:20px;
   padding:14px;
@@ -90,27 +68,14 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   font-family: Arial, Helvetica, sans-serif;
 }
 .decoded-title { font-weight:bold; margin-bottom:6px; }
+.hw { color:#1f6fb2; font-weight:bold; }
+.tw-danger { color:#c0392b; font-weight:bold; }
 .footer {
   text-align:center;
   font-size:12px;
   margin-top:20px;
   color:#4a6a78;
 }
-.pdf-link {
-  display:inline-block;
-  margin-bottom:8px;
-  font-size:12px;
-  color:#6fa89a;
-  text-decoration:none;
-  border:1px solid #8ecae6;
-  padding:4px 8px;
-  border-radius:6px;
-}
-
-/* === WIND COMPONENT COLORS === */
-.hw { color:#1f6fb2; font-weight:bold; }        /* Headwind */
-.tw-warn { color:#e6a700; font-weight:bold; }  /* Tailwind ≤ 5 kt */
-.tw-danger { color:#c0392b; font-weight:bold;} /* Tailwind > 5 kt */
 </style>
 </head>
 
@@ -127,24 +92,19 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
     <button class="primary-btn" onclick="getTaf()">TAF</button>
   </div>
 
-  <div id="favorites" class="favorites"></div>
   <div id="result" class="result-box"></div>
 
   <div class="footer">
-    <a href="metar_taf_codes.pdf" target="_blank" class="pdf-link">
-      📄 METAR & TAF Codes (PDF)
-    </a>
-    <div>Fly and Learn</div>
-    <span>Capi Casky</span>
+    Fly and Learn · Capi Casky
   </div>
 </div>
+
 <script>
 document.addEventListener("DOMContentLoaded", () => {
 
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 
-/* === WIND COMPONENT AUTO – DATA === */
 const airportRunways = {
   MROC:{runways:[{id:"07",h:70},{id:"25",h:250}]},
   MRPV:{runways:[{id:"10",h:100},{id:"28",h:280}]},
@@ -152,170 +112,80 @@ const airportRunways = {
   MRLM:{runways:[{id:"05",h:50},{id:"23",h:230}]}
 };
 
-/* ---------- METAR ---------- */
-async function getMetar(){
+window.getMetar = async function(){
   const icao = icaoInput.value.trim().toUpperCase();
   if(icao.length !== 4) return;
 
   resultBox.style.display = "block";
-  resultBox.innerHTML = "Loading METAR...";
+  resultBox.textContent = "Loading METAR...";
 
   try{
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=1`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim();
+    if(!raw){ resultBox.textContent="No METAR available"; return; }
 
-    if(!raw){
-      resultBox.innerHTML = "No METAR available.";
-      return;
-    }
-
-    const zulu = raw.match(/\d{6}Z/);
-    const highlighted = zulu
-      ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`)
-      : raw;
-
-    let html = `<strong>RAW METAR</strong>\n${highlighted}\n`;
+    const z = raw.match(/\d{6}Z/);
+    let html = `<strong>RAW METAR</strong>\n${z?raw.replace(z[0],`<span class="zulu">${z[0]}</span>`):raw}\n`;
     html += decodeMetar(raw);
-    html += buildWindComponent(raw, icao);
-
+    html += buildWindComponent(raw,icao);
     resultBox.innerHTML = html;
-
-  }catch(e){
-    resultBox.innerHTML = "Error retrieving METAR.";
-    console.error(e);
+  }catch{
+    resultBox.textContent="Error retrieving METAR";
   }
 }
 
-/* ---------- TAF ---------- */
-async function getTaf(){
+window.getTaf = async function(){
   const icao = icaoInput.value.trim().toUpperCase();
   if(icao.length !== 4) return;
 
-  resultBox.style.display = "block";
-  resultBox.innerHTML = "Loading TAF...";
+  resultBox.style.display="block";
+  resultBox.textContent="Loading TAF...";
 
   try{
     const url = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim();
+    if(!raw){ resultBox.textContent="No TAF available"; return; }
 
-    if(!raw){
-      resultBox.innerHTML = "No TAF available for this airport.";
-      return;
-    }
-
-    let html = `<strong>RAW TAF</strong>\n${raw}\n`;
-    html += decodeTaf(raw);
-
-    resultBox.innerHTML = html;
-
-  }catch(e){
-    resultBox.innerHTML = "Error retrieving TAF.";
-    console.error(e);
+    resultBox.innerHTML = `<strong>RAW TAF</strong>\n${raw}\n` + decodeTaf(raw);
+  }catch{
+    resultBox.textContent="Error retrieving TAF";
   }
 }
 
-/* ---------- DECODE METAR ---------- */
 function decodeMetar(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
-
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
-    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
-    html += `<br>`;
-  }
-
-  const vis = raw.match(/ (\d{1,2})SM/);
-  if(vis){
-    html += `👁️ Visibility: ${vis[1]} SM<br>`;
-  }
-
-  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds){
-    html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
-  }
-
-  const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp){
-    html += `🌡️ Temp / Dew: ${temp[1].replace("M","-")}°C / ${temp[2].replace("M","-")}°C<br>`;
-  }
-
-  const alt = raw.match(/A(\d{4})/);
-  if(alt){
-    html += `🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
-  }
-
-  return html + `</div>`;
+  let h=`<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
+  const w=raw.match(/(\d{3}|VRB)(\d{2})KT/);
+  if(w) h+=`🌬️ Wind: ${w[1]}° ${w[2]} kt<br>`;
+  const v=raw.match(/ (\d{1,2})SM/);
+  if(v) h+=`👁️ Visibility: ${v[1]} SM<br>`;
+  return h+`</div>`;
 }
 
-/* ---------- DECODE TAF ---------- */
 function decodeTaf(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded TAF (Basic)</div>`;
-
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
-  }
-
-  const vis = raw.match(/ (\d{1,2})SM/);
-  if(vis){
-    html += `👁️ Visibility: ${vis[1]} SM<br>`;
-  }
-
-  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds){
-    html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
-  }
-
-  const tempo = raw.match(/TEMPO\s([^=]+)/);
-  if(tempo){
-    html += `⏱️ TEMPO: ${tempo[1]}<br>`;
-  }
-
-  html += `<small>Basic decoding for training purposes</small></div>`;
-  return html;
+  let h=`<div class="decoded"><div class="decoded-title">Decoded TAF (Basic)</div>`;
+  const w=raw.match(/(\d{3}|VRB)(\d{2})KT/);
+  if(w) h+=`🌬️ Wind: ${w[1]}° ${w[2]} kt<br>`;
+  return h+`</div>`;
 }
 
-/* ---------- WIND COMPONENT ---------- */
-function buildWindComponent(raw, icao){
+function buildWindComponent(raw,icao){
   if(!airportRunways[icao]) return "";
-
-  const windMatch = raw.match(/(VRB|\d{3})(\d{2})(G\d{2})?KT/);
-  if(!windMatch) return "";
-
-  if(windMatch[1] === "VRB"){
-    return `<div class="decoded"><div class="decoded-title">Wind Component</div>
-    Variable wind – auto calculation not available</div>`;
-  }
-
-  const windDir = parseInt(windMatch[1]);
-  const windSpd = parseInt(windMatch[2]);
-
-  let html = `<div class="decoded"><div class="decoded-title">Wind Component (Auto)</div>`;
-
+  const w=raw.match(/(\d{3})(\d{2})KT/);
+  if(!w) return "";
+  const wd=parseInt(w[1]), ws=parseInt(w[2]);
+  let h=`<div class="decoded"><div class="decoded-title">Wind Component</div>`;
   airportRunways[icao].runways.forEach(r=>{
-    let diff = Math.abs(windDir - r.h);
-    if(diff > 180) diff = 360 - diff;
-
-    let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
-    let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
-
-    html += `RWY ${r.id}<br>`;
-    html += head >= 0
-      ? `<span class="hw">Headwind</span>: ${head} kt<br>`
-      : `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
-
-    html += `Crosswind: ${Math.abs(cross)} kt<br><br>`;
+    let d=Math.abs(wd-r.h); if(d>180)d=360-d;
+    let hw=Math.round(ws*Math.cos(d*Math.PI/180));
+    h+=`RWY ${r.id}: ${hw>=0?'<span class="hw">Headwind</span>':'<span class="tw-danger">Tailwind</span>'} ${Math.abs(hw)} kt<br>`;
   });
-
-  return html + `<small>Training use only</small></div>`;
+  return h+`</div>`;
 }
 
 });
 </script>
-
 
 </body>
 </html>
