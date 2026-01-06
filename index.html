@@ -11,26 +11,30 @@
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
 
+  
 <title>Fly and Learn – Aviation Tools</title>
 
 <style>
-/* === (ESTILOS SIN CAMBIOS) === */
 body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   background-color: #f4f1e8;
   color: #355f5b;
 }
+
 .container {
   max-width: 420px;
-  margin: 20px auto;
-  background: #ffffff;
+ margin: 20px auto;
+ background: #ffffff;
   padding: 25px;
   border-radius: 14px;
   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
 }
+
 h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
 .subtitle { text-align:center; font-size:13px; margin-bottom:20px; color:#4a6a78; }
+
+/* 🔒 INPUT FIXED SIZE */
 .icao-input {
   width: 100%;
   padding: 14px;
@@ -40,8 +44,28 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   border-radius: 10px;
   border: 2px solid #8ecae6;
   box-sizing: border-box;
+  outline: none;
+  box-shadow: none;
+  appearance: none;
 }
-.buttons { display:flex; flex-direction:column; gap:12px; margin-top:18px; }
+
+.buttons {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:18px;
+}
+
+button {
+  padding:13px;
+  font-size:15px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#6fa89a;
+  color:white;
+}
+/* Primary action buttons */
 .primary-btn {
   padding:13px;
   font-size:15px;
@@ -51,8 +75,19 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   background:#6fa89a;
   color:white;
 }
-.primary-btn:hover { background:#5e9c8c; }
-.favorites { margin-top:14px; display:flex; gap:8px; flex-wrap:wrap; }
+
+.primary-btn:hover {
+  background:#5e9c8c;
+}
+
+
+.favorites {
+  margin-top:14px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
 .fav-btn {
   padding:6px 10px;
   font-size:13px;
@@ -61,6 +96,7 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   background:#eaf4fa;
   cursor:pointer;
 }
+
 .result-box {
   margin-top:20px;
   padding:14px;
@@ -72,25 +108,82 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   white-space:pre-wrap;
   display:none;
 }
-.zulu { color:#1f6fb2; font-weight:bold; }
+.wind-auto {
+  margin-top:12px;
+  padding:12px;
+  border-radius:10px;
+  background:#f1f8fb;
+  border:1px dashed #8ecae6;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size:14px;
+}
+
+.zulu {
+  color:#1f6fb2; /* azul aviación */
+  font-weight:bold;
+}
+
 .decoded {
   margin-top:12px;
   padding-top:10px;
   border-top:1px dashed #8ecae6;
   font-family: Arial, Helvetica, sans-serif;
 }
-.decoded-title { font-weight:bold; margin-bottom:6px; }
-.footer { text-align:center; font-size:12px; margin-top:20px; color:#4a6a78; }
-.pdf-link {
-  display:inline-block;
-  margin-bottom:8px;
-  font-size:12px;
-  color:#6fa89a;
-  text-decoration:none;
-  border:1px solid #8ecae6;
-  padding:4px 8px;
-  border-radius:6px;
+
+.decoded-title {
+  font-weight:bold;
+  margin-bottom:6px;
 }
+
+.hint {
+  font-style: italic;
+  color:#4a6a78;
+}
+
+/* PDF link */
+.pdf-link {
+  display: inline-block;
+  margin-bottom: 8px;
+  font-size: 12px;
+  color: #6fa89a;
+  text-decoration: none;
+  border: 1px solid #8ecae6;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+.pdf-link:hover {
+  background-color: #eaf4fa;
+}
+
+.footer {
+  text-align:center;
+  font-size:12px;
+  margin-top:20px;
+  color:#4a6a78;
+}
+/* Wind Component button (secondary) */
+.wind-box {
+  margin-top:12px;
+  text-align:center;
+}
+
+.wind-btn {
+  padding:9px 16px;
+  font-size:14px;
+  border-radius:8px;
+  border:none;
+  background:#6fa89a;   /* mismo color que METAR / TAF */
+  color:white;
+  cursor:pointer;
+  font-weight:500;
+}
+
+.wind-btn:hover {
+  background:#5e9c8c;   /* un poco más oscuro al hover */
+}
+
+
 </style>
 </head>
 
@@ -103,12 +196,24 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
   <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
 
   <div class="buttons">
-    <button class="primary-btn" onclick="getMetar()">METAR</button>
-    <button class="primary-btn" onclick="getTaf()">TAF</button>
-  </div>
+  <button class="primary-btn" onclick="getMetar()">METAR</button>
+  <button class="primary-btn" onclick="getTaf()">TAF</button>
+</div>
+
+
 
   <div id="favorites" class="favorites"></div>
   <div id="result" class="result-box"></div>
+  <!-- Wind component auto (only when data exists) -->
+<div id="windAuto" class="wind-auto" style="display:none;"></div>
+
+  <div class="wind-box">
+  <button class="primary-btn wind-btn" onclick="alert('dylan te amo ✈️')">
+
+    Wind Component
+  </button>
+</div>
+
 
   <div class="footer">
     <a href="metar_taf_codes.pdf" target="_blank" class="pdf-link">
@@ -124,77 +229,169 @@ const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 const favoritesDiv = document.getElementById("favorites");
 
+let lastICAO = null;
+let lastType = null;
+let autoTimer = null;
+
+/* ---------- FAVORITES ---------- */
+function saveFavorite(icao){
+  let favs = JSON.parse(localStorage.getItem("favs")) || [];
+  if(!favs.includes(icao)){
+    favs.unshift(icao);
+    if(favs.length>5) favs.pop();
+    localStorage.setItem("favs", JSON.stringify(favs));
+  }
+  renderFavorites();
+}
+
+function renderFavorites(){
+  favoritesDiv.innerHTML="";
+  (JSON.parse(localStorage.getItem("favs"))||[]).forEach(code=>{
+    const b=document.createElement("div");
+    b.className="fav-btn";
+    b.textContent=code;
+    b.onclick=()=>{
+      icaoInput.value=code;
+      showHint();
+    };
+    favoritesDiv.appendChild(b);
+  });
+}
+
+function showHint(){
+  resultBox.style.display="block";
+  resultBox.innerHTML=`<span class="hint">ICAO selected. Please choose METAR or TAF.</span>`;
+}
+
+/* ---------- AUTO REFRESH ---------- */
+function startAutoRefresh(){
+  clearInterval(autoTimer);
+  autoTimer = setInterval(()=>{
+    if(lastICAO && lastType){
+      lastType === "METAR" ? getMetar(true) : getTaf(true);
+    }
+  }, 300000);
+}
+
 /* ---------- METAR ---------- */
 async function getMetar(){
-  const icao = icaoInput.value.trim().toUpperCase();
-  if(icao.length !== 4) return;
+  const icao=icaoInput.value.trim().toUpperCase();
+  if(icao.length!==4) return;
 
-  resultBox.style.display = "block";
-  resultBox.textContent = "Loading METAR...";
+  lastICAO = icao;
+  lastType = "METAR";
+  startAutoRefresh();
 
-  const url = `https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`;
-  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw = (await r.text()).trim().split("\n").pop();
+  resultBox.style.display="block";
+  resultBox.textContent="Loading METAR...";
 
-  resultBox.innerHTML = `<strong>RAW METAR</strong>\n${raw}\n` + decodeMetar(raw);
+  const nocache = Date.now();
+  const url=`https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`;
+  const r=await fetch(
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&t=${nocache}`,
+    { cache:"no-store" }
+  );
+
+  const raw=(await r.text()).trim().split("\n").pop();
+  saveFavorite(icao);
+
+  const zulu = raw.match(/\d{6}Z/);
+  const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
+
+  resultBox.innerHTML=`<strong>RAW METAR</strong>\n${highlighted}\n`+decodeMetar(raw);
 }
 
 /* ---------- DECODE METAR ---------- */
 function decodeMetar(raw){
-  let html = `<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
+  let html=`<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
 
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind) html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt${wind[3] ? " gust " + wind[3].slice(1) : ""}<br>`;
+  const wind=raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
+  if(wind) html+=`🌬️ Wind: ${wind[1]}° ${wind[2]} kt${wind[3]?" gust "+wind[3].slice(1)+"":""}<br>`;
 
-  const vis = raw.match(/ (\d{1,2})SM/);
-  if(vis) html += `👁️ Visibility: ${vis[1]} SM<br>`;
+  const alt=raw.match(/A(\d{4})/);
+  if(alt) html+=`🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
 
-  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds) html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
-
-  const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp){
-    const t = temp[1].replace("M","-");
-    const d = temp[2].replace("M","-");
-    html += `🌡️ Temp/Dew: ${t}°C / ${d}°C<br>`;
-  }
-
-  const alt = raw.match(/A(\d{4})/);
-  if(alt) html += `🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
-
-  return html + `</div>`;
+  return html+`</div>`;
 }
 
 /* ---------- TAF ---------- */
 async function getTaf(){
-  const icao = icaoInput.value.trim().toUpperCase();
-  if(icao.length !== 4) return;
+  const icao=icaoInput.value.trim().toUpperCase();
+  if(icao.length!==4) return;
 
-  resultBox.style.display = "block";
-  resultBox.textContent = "Loading TAF...";
+  lastICAO = icao;
+  lastType = "TAF";
+  startAutoRefresh();
 
-  const url = `https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/${icao}.TXT`;
-  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw = (await r.text()).trim().split("\n").slice(1).join(" ");
+  resultBox.style.display="block";
+  resultBox.textContent="Loading TAF...";
 
-  resultBox.innerHTML = `<strong>RAW TAF</strong>\n${raw}\n` + decodeTaf(raw);
+  const nocache = Date.now();
+  const url=`https://tgftp.nws.noaa.gov/data/forecasts/taf/stations/${icao}.TXT`;
+  const r=await fetch(
+    `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}&t=${nocache}`,
+    { cache:"no-store" }
+  );
+
+  const raw=(await r.text()).trim().split("\n").slice(1).join(" ");
+  saveFavorite(icao);
+
+  const zulu = raw.match(/\d{6}Z/);
+  const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
+
+  resultBox.innerHTML=`<strong>RAW TAF</strong>\n${highlighted}\n`+decodeTaf(raw);
 }
 
 /* ---------- DECODE TAF ---------- */
 function decodeTaf(raw){
   let html = `<div class="decoded"><div class="decoded-title">Decoded TAF (training)</div>`;
 
+  /* --- Base wind --- */
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind) html += `🌬️ Base wind: ${wind[1]}° ${wind[2]} kt<br>`;
+  if(wind){
+    html += `🌬️ Base wind: ${wind[1]}° ${wind[2]} kt`;
+    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
+    html += `<br>`;
+  }
 
-  const vis = raw.match(/ (\d{1,2})SM/);
-  if(vis) html += `👁️ Visibility: ${vis[1]} SM<br>`;
+  /* --- Validity period --- */
+  const validity = raw.match(/(\d{4})\/(\d{4})/);
+  if(validity){
+    html += `⏱️ Validity: ${validity[1]} to ${validity[2]} UTC<br>`;
+  }
 
-  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds) html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
+  /* --- Max temperature --- */
+  const maxTemp = raw.match(/TX(M?\d{2})\/(\d{2})Z?/);
+  if(maxTemp){
+    const tx = maxTemp[1].replace("M","-");
+    html += `🌡️ Max temp: ${tx}°C<br>`;
+  }
+
+  /* --- Min temperature --- */
+  const minTemp = raw.match(/TN(M?\d{2})\/(\d{2})Z?/);
+  if(minTemp){
+    const tn = minTemp[1].replace("M","-");
+    html += `🌡️ Min temp: ${tn}°C<br>`;
+  }
+
+  /* --- Important weather (simple highlight) --- */
+  if(raw.includes("TS")){
+    html += `⚠️ Thunderstorms mentioned<br>`;
+  }
+  if(raw.includes("RA")){
+    html += `🌧️ Rain mentioned<br>`;
+  }
+  if(raw.includes("BR") || raw.includes("FG")){
+    html += `🌫️ Reduced visibility possible<br>`;
+  }
 
   return html + `</div>`;
 }
+
+
+renderFavorites();
+
+
 </script>
 
 </body>
