@@ -148,6 +148,15 @@ document.addEventListener("DOMContentLoaded", () => {
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 
+// Enter = METAR
+icaoInput.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    getMetar();
+  }
+});
+
+
 /* RUNWAYS DATA */
 const airportRunways = {
   MROC:{runways:[{id:"07",h:70},{id:"25",h:250}]},
