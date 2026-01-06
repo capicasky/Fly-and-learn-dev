@@ -1,4 +1,146 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Fly and Learn">
+<meta name="theme-color" content="#f4f1e8">
+<link rel="apple-touch-icon" sizes="180x180" href="icon-180.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icon-512.png">
+
+<title>Fly and Learn – Aviation Tools</title>
+
+<style>
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #f4f1e8;
+  color: #355f5b;
+}
+.container {
+  max-width: 420px;
+  margin: 20px auto;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 14px;
+  box-shadow: 0 6px 14px rgba(0,0,0,0.12);
+}
+h1 { text-align:center; color:#6fa89a; margin-bottom:5px; }
+.subtitle { text-align:center; font-size:13px; margin-bottom:20px; color:#4a6a78; }
+.icao-input {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  text-align: center;
+  letter-spacing: 2px;
+  border-radius: 10px;
+  border: 2px solid #8ecae6;
+  box-sizing: border-box;
+}
+.buttons {
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+  margin-top:18px;
+}
+.primary-btn {
+  padding:13px;
+  font-size:15px;
+  border:none;
+  border-radius:10px;
+  cursor:pointer;
+  background:#6fa89a;
+  color:white;
+}
+.primary-btn:hover { background:#5e9c8c; }
+.favorites {
+  margin-top:14px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.fav-btn {
+  padding:6px 10px;
+  font-size:13px;
+  border-radius:6px;
+  border:1px solid #8ecae6;
+  background:#eaf4fa;
+  cursor:pointer;
+}
+.result-box {
+  margin-top:20px;
+  padding:14px;
+  border-radius:10px;
+  background:#eaf4fa;
+  border:1px solid #8ecae6;
+  font-family:"Courier New", monospace;
+  font-size:14px;
+  white-space:pre-wrap;
+  display:none;
+}
+.zulu { color:#1f6fb2; font-weight:bold; }
+.decoded {
+  margin-top:12px;
+  padding-top:10px;
+  border-top:1px dashed #8ecae6;
+  font-family: Arial, Helvetica, sans-serif;
+}
+.decoded-title { font-weight:bold; margin-bottom:6px; }
+.footer {
+  text-align:center;
+  font-size:12px;
+  margin-top:20px;
+  color:#4a6a78;
+}
+.pdf-link {
+  display:inline-block;
+  margin-bottom:8px;
+  font-size:12px;
+  color:#6fa89a;
+  text-decoration:none;
+  border:1px solid #8ecae6;
+  padding:4px 8px;
+  border-radius:6px;
+}
+
+/* === WIND COMPONENT COLORS === */
+.hw { color:#1f6fb2; font-weight:bold; }        /* Headwind */
+.tw-warn { color:#e6a700; font-weight:bold; }  /* Tailwind ≤ 5 kt */
+.tw-danger { color:#c0392b; font-weight:bold;} /* Tailwind > 5 kt */
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <h1>Fly and Learn</h1>
+  <div class="subtitle">Aviation study tools – student use only</div>
+
+  <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
+
+  <div class="buttons">
+    <button class="primary-btn" onclick="getMetar()">METAR</button>
+    <button class="primary-btn" onclick="getTaf()">TAF</button>
+  </div>
+
+  <div id="favorites" class="favorites"></div>
+  <div id="result" class="result-box"></div>
+
+  <div class="footer">
+    <a href="metar_taf_codes.pdf" target="_blank" class="pdf-link">
+      📄 METAR & TAF Codes (PDF)
+    </a>
+    <div>Fly and Learn</div>
+    <span>Capi Casky</span>
+  </div>
+</div>
 <script>
+document.addEventListener("DOMContentLoaded", () => {
+
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 
@@ -170,4 +312,10 @@ function buildWindComponent(raw, icao){
 
   return html + `<small>Training use only</small></div>`;
 }
+
+});
 </script>
+
+
+</body>
+</html>
