@@ -298,12 +298,6 @@ function decodeTaf(raw){
   let html = `<div class="section-decoded decoded">
     <div class="decoded-title">Decoded TAF</div>`;
 
-  // lógica del TAF (wind, TX, TN)
-
-  return html + `</div>`;
-}
-
-
   // BASE WIND (first occurrence)
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
   if(wind){
@@ -326,6 +320,7 @@ function decodeTaf(raw){
 
   return html + `<small>Basic TAF decoding</small></div>`;
 }
+
 
 
 /* ===== WIND COMPONENT ===== */
