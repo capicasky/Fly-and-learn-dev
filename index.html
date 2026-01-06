@@ -43,16 +43,15 @@ h1 {
 
 .icao-input {
   width: 100%;
-  height: 42px;          /* controla la altura */
-  padding: 6px 8px;      /* menos padding vertical */
-  font-size: 16px;       /* tamaño más equilibrado */
+  height: 42px;
+  padding: 6px 8px;
+  font-size: 16px;
   text-align: center;
   letter-spacing: 2px;
   border-radius: 10px;
   border: 2px solid #8ecae6;
   box-sizing: border-box;
 }
-
 
 /* BOTONES */
 .buttons {
@@ -108,25 +107,9 @@ h1 {
 
 /* WIND COMPONENT */
 .hw { color:#1f6fb2; font-weight:bold; }
-.tw-warn { color:#e6a700; font-weight:bold; }
 .tw-danger { color:#c0392b; font-weight:bold; }
- 
-  <div style="text-align:center; margin-top:10px;">
-  <a href="metar_taf_codes.pdf"
-     target="_blank"
-     class="metar-codes-link">
-     📄 METAR & TAF Codes
-  </a>
 
-/* FOOTER */
-.footer {
-  text-align:center;
-  font-size:12px;
-  margin-top:18px;
-  color:#4a6a78;
-}
- 
-  /* ===== SECCIONES RESULTADO ===== */
+/* SECCIONES */
 .section-raw {
   background:#ffffff;
   border:1px solid #d6e4ec;
@@ -148,7 +131,9 @@ h1 {
   padding:10px;
   margin-bottom:6px;
 }
-  .metar-codes-link {
+
+/* METAR CODES LINK */
+.metar-codes-link {
   display:inline-block;
   font-size:12px;
   color:#6fa89a;
@@ -162,6 +147,13 @@ h1 {
   background:#eaf4fa;
 }
 
+/* FOOTER */
+.footer {
+  text-align:center;
+  font-size:12px;
+  margin-top:18px;
+  color:#4a6a78;
+}
 </style>
 </head>
 
@@ -180,13 +172,16 @@ h1 {
 
   <div id="result" class="result-box"></div>
 
+  <div style="text-align:center; margin-top:12px;">
+    <a href="metar_taf_codes.pdf" target="_blank" class="metar-codes-link">
+      📄 METAR & TAF Codes
+    </a>
+  </div>
+
   <div class="footer">
     Fly smart — understand the weather<br>
     Capi Casky
   </div>
- 
-</div>
-
 </div>
 
 <script>
@@ -195,16 +190,10 @@ document.addEventListener("DOMContentLoaded", () => {
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
 
-// Enter = METAR
-icaoInput.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") {
-    e.preventDefault();
-    getMetar();
-  }
+icaoInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") getMetar();
 });
 
-
-/* RUNWAYS DATA */
 const airportRunways = {
   MROC:{runways:[{id:"07",h:70},{id:"25",h:250}]},
   MRPV:{runways:[{id:"10",h:100},{id:"28",h:280}]},
@@ -212,7 +201,6 @@ const airportRunways = {
   MRLM:{runways:[{id:"05",h:50},{id:"23",h:230}]}
 };
 
-/* ================= METAR ================= */
 window.getMetar = async function(){
   const icao = icaoInput.value.trim().toUpperCase();
   if(icao.length !== 4) return;
@@ -220,37 +208,29 @@ window.getMetar = async function(){
   resultBox.style.display = "block";
   resultBox.textContent = "Loading METAR...";
 
-  try {
+  try{
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=1`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim();
 
-if(!raw || raw.startsWith("{")){
-  resultBox.textContent = "METAR not available for this airport at the moment.";
-  return;
-}
-
+    if(!raw || raw.startsWith("{")){
+      resultBox.textContent = "METAR not available.";
+      return;
+    }
 
     const zulu = raw.match(/\d{6}Z/);
-    const highlighted = zulu
-      ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`)
-      : raw;
+    const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
 
-    let html = `<div class="section-raw">
-<strong>RAW METAR</strong><br>${highlighted}
-</div>`;
-
+    let html = `<div class="section-raw"><strong>RAW METAR</strong><br>${highlighted}</div>`;
     html += decodeMetar(raw);
     html += buildWindComponent(raw, icao);
 
     resultBox.innerHTML = html;
-
-  } catch (e) {
+  } catch {
     resultBox.textContent = "Error retrieving METAR.";
   }
 };
 
-/* ================= TAF ================= */
 window.getTaf = async function(){
   const icao = icaoInput.value.trim().toUpperCase();
   if(icao.length !== 4) return;
@@ -258,7 +238,7 @@ window.getTaf = async function(){
   resultBox.style.display = "block";
   resultBox.textContent = "Loading TAF...";
 
-  try {
+  try{
     const url = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim();
@@ -269,116 +249,61 @@ window.getTaf = async function(){
     }
 
     resultBox.innerHTML =
-  `<div class="section-raw">
-     <strong>RAW TAF</strong><br>${raw}
-   </div>` + decodeTaf(raw);
-
-
-  } catch (e) {
+      `<div class="section-raw"><strong>RAW TAF</strong><br>${raw}</div>` +
+      decodeTaf(raw);
+  } catch {
     resultBox.textContent = "Error retrieving TAF.";
   }
 };
 
-/* ===== DECODE METAR ===== */
 function decodeMetar(raw){
-  let html = `<div class="section-decoded decoded">
-    <div class="decoded-title">Decoded METAR</div>`;
-
-  // WIND
+  let html = `<div class="section-decoded decoded"><div class="decoded-title">Decoded METAR</div>`;
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
   if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
-    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
-    html += `<br>`;
+    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
   }
-
-  // CLOUDS
   const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds){
-    html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
-  }
-
-  // TEMP / DEW
+  if(clouds) html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
   const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp){
-    const t = temp[1].replace("M","-");
-    const d = temp[2].replace("M","-");
-    html += `🌡️ Temp / Dew: ${t}°C / ${d}°C<br>`;
-  }
-
-  // QNH
+  if(temp) html += `🌡️ Temp/Dew: ${temp[1].replace("M","-")} / ${temp[2].replace("M","-")} °C<br>`;
   const qnh = raw.match(/A(\d{4})/);
-  if(qnh){
-    html += `🎚️ QNH: ${(qnh[1]/100).toFixed(2)} inHg<br>`;
-  }
-
+  if(qnh) html += `🎚️ QNH: ${(qnh[1]/100).toFixed(2)} inHg<br>`;
   return html + `</div>`;
 }
 
-
-/* ===== DECODE TAF ===== */
 function decodeTaf(raw){
-  let html = `<div class="section-decoded decoded">
-    <div class="decoded-title">Decoded TAF</div>`;
-
-  // BASE WIND (first occurrence)
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
-    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
-    html += `<br>`;
-  }
-
-  // MAX TEMP
-  const maxT = raw.match(/TX(M?\d{2})\/\d{4}Z/);
-  if(maxT){
-    html += `🌡️ Max Temp: ${maxT[1].replace("M","-")}°C<br>`;
-  }
-
-  // MIN TEMP
-  const minT = raw.match(/TN(M?\d{2})\/\d{4}Z/);
-  if(minT){
-    html += `🌡️ Min Temp: ${minT[1].replace("M","-")}°C<br>`;
-  }
-
+  let html = `<div class="section-decoded decoded"><div class="decoded-title">Decoded TAF</div>`;
+  const wind = raw.match(/(\d{3}|VRB)(\d{2})KT/);
+  if(wind) html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
+  const maxT = raw.match(/TX(M?\d{2})/);
+  if(maxT) html += `🌡️ Max Temp: ${maxT[1].replace("M","-")}°C<br>`;
+  const minT = raw.match(/TN(M?\d{2})/);
+  if(minT) html += `🌡️ Min Temp: ${minT[1].replace("M","-")}°C<br>`;
   return html + `<small>Basic TAF decoding</small></div>`;
 }
 
-
-
-/* ===== WIND COMPONENT ===== */
 function buildWindComponent(raw, icao){
   if(!airportRunways[icao]) return "";
-
   const w = raw.match(/(\d{3})(\d{2})KT/);
   if(!w) return "";
 
   const windDir = parseInt(w[1]);
   const windSpd = parseInt(w[2]);
-
-  let html = `<div class="section-wind decoded">
-    <div class="decoded-title">Wind Component (Auto)</div>`;
+  let html = `<div class="section-wind decoded"><div class="decoded-title">Wind Component</div>`;
 
   airportRunways[icao].runways.forEach(r=>{
     let diff = Math.abs(windDir - r.h);
     if(diff > 180) diff = 360 - diff;
-
-    let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
-    let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
-
+    let head = Math.round(windSpd * Math.cos(diff * Math.PI/180));
+    let cross = Math.round(windSpd * Math.sin(diff * Math.PI/180));
     html += `RWY ${r.id}<br>`;
-    if(head >= 0){
-      html += `<span class="hw">Headwind</span>: ${head} kt<br>`;
-    } else {
-      html += `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
-    }
-
+    html += head >= 0 ? `<span class="hw">Headwind</span>: ${head} kt<br>`
+                      : `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
     html += `Crosswind: ${Math.abs(cross)} kt<br><br>`;
   });
 
-  return html + `<small>For training purposes only</small></div>`;
+  return html + `<small>Training use only</small></div>`;
 }
-
 
 });
 </script>
