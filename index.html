@@ -159,9 +159,10 @@ async function getMetar(){
   resultBox.style.display="block";
   resultBox.textContent="Loading METAR...";
 
-  const url=`https://tgftp.nws.noaa.gov/data/observations/metar/stations/${icao}.TXT`;
+  const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=1`;
   const r=await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw=(await r.text()).trim().split("\n").pop();
+  const raw = (await r.text()).trim();
+
 
   const zulu=raw.match(/\d{6}Z/);
   const highlighted=zulu?raw.replace(zulu[0],`<span class="zulu">${zulu[0]}</span>`):raw;
@@ -174,17 +175,41 @@ async function getMetar(){
 
 /* ---------- DECODE METAR ---------- */
 function decodeMetar(raw){
-  let html=`<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
-  const wind=raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
+  let html = `<div class="decoded"><div class="decoded-title">Decoded METAR</div>`;
+
+  const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
   if(wind){
-    html+=`🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
-    if(wind[3]) html+=` (gust ${wind[3].slice(1)} kt)`;
-    html+=`<br>`;
+    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt`;
+    if(wind[3]) html += ` (gust ${wind[3].slice(1)} kt)`;
+    html += `<br>`;
   }
-  return html+`</div>`;
+
+  const vis = raw.match(/ (\d{1,2})SM/);
+  if(vis){
+    html += `👁️ Visibility: ${vis[1]} SM<br>`;
+  }
+
+  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
+  if(clouds){
+    html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
+  }
+
+  const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
+  if(temp){
+    const t = temp[1].replace("M","-");
+    const d = temp[2].replace("M","-");
+    html += `🌡️ Temp / Dew: ${t}°C / ${d}°C<br>`;
+  }
+
+  const alt = raw.match(/A(\d{4})/);
+  if(alt){
+    html += `🎚️ Altimeter: ${(alt[1]/100).toFixed(2)} inHg<br>`;
+  }
+
+  return html + `</div>`;
 }
 
-/* === WIND COMPONENT AUTO (ORDER + COLORS) === */
+
 /* === WIND COMPONENT AUTO (ORDER + COLORS) === */
 function buildWindComponent(raw, icao){
   if(!airportRunways[icao]) return "";
