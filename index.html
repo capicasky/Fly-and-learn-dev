@@ -88,14 +88,11 @@ h1 {
   display:none;
 }
 
-.zulu {
-  color:#1f6fb2;
-  font-weight:bold;
-}
+.zulu { color:#1f6fb2; font-weight:bold; }
 
 .decoded {
-  margin-top:10px;
-  padding-top:10px;
+  margin-top:8px;
+  padding-top:8px;
   border-top:1px dashed #8ecae6;
   font-family: Arial, Helvetica, sans-serif;
 }
@@ -105,32 +102,39 @@ h1 {
   margin-bottom:6px;
 }
 
-/* WIND COMPONENT */
-.hw { color:#1f6fb2; font-weight:bold; }
-.tw-danger { color:#c0392b; font-weight:bold; }
-
 /* SECCIONES */
+.section-title {
+  text-align:center;
+  font-weight:bold;
+  color:#355f5b;
+  margin:12px 0 6px;
+}
+
 .section-raw {
   background:#ffffff;
   border:1px solid #d6e4ec;
   border-radius:8px;
   padding:10px;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 
 .section-decoded {
   background:#f7fbfd;
   border-left:4px solid #6fa89a;
   padding:10px;
-  margin-bottom:12px;
+  margin-bottom:10px;
 }
 
 .section-wind {
   background:#fffaf2;
   border-left:4px solid #1f6fb2;
   padding:10px;
-  margin-bottom:6px;
+  margin-bottom:10px;
 }
+
+/* WIND */
+.hw { color:#1f6fb2; font-weight:bold; }
+.tw-danger { color:#c0392b; font-weight:bold; }
 
 /* METAR CODES LINK */
 .metar-codes-link {
@@ -221,7 +225,8 @@ window.getMetar = async function(){
     const zulu = raw.match(/\d{6}Z/);
     const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
 
-    let html = `<div class="section-raw"><strong>RAW METAR</strong><br>${highlighted}</div>`;
+    let html = `<div class="section-title">✈️ METAR</div>`;
+    html += `<div class="section-raw"><strong>RAW METAR</strong><br>${highlighted}</div>`;
     html += decodeMetar(raw);
     html += buildWindComponent(raw, icao);
 
@@ -248,9 +253,11 @@ window.getTaf = async function(){
       return;
     }
 
-    resultBox.innerHTML =
-      `<div class="section-raw"><strong>RAW TAF</strong><br>${raw}</div>` +
-      decodeTaf(raw);
+    let html = `<div class="section-title">📅 TAF</div>`;
+    html += `<div class="section-raw"><strong>RAW TAF</strong><br>${raw}</div>`;
+    html += decodeTaf(raw);
+
+    resultBox.innerHTML = html;
   } catch {
     resultBox.textContent = "Error retrieving TAF.";
   }
@@ -259,13 +266,11 @@ window.getTaf = async function(){
 function decodeMetar(raw){
   let html = `<div class="section-decoded decoded"><div class="decoded-title">Decoded METAR</div>`;
   const wind = raw.match(/(\d{3}|VRB)(\d{2})(G\d{2})?KT/);
-  if(wind){
-    html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
-  }
+  if(wind) html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
   const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
   if(clouds) html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
   const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp) html += `🌡️ Temp/Dew: ${temp[1].replace("M","-")} / ${temp[2].replace("M","-")} °C<br>`;
+  if(temp) html += `🌡️ Temp / Dew: ${temp[1].replace("M","-")} / ${temp[2].replace("M","-")} °C<br>`;
   const qnh = raw.match(/A(\d{4})/);
   if(qnh) html += `🎚️ QNH: ${(qnh[1]/100).toFixed(2)} inHg<br>`;
   return html + `</div>`;
