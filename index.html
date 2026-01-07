@@ -283,36 +283,74 @@ function decodeTaf(raw){
   return html + `</div>`;
 }
 
-function buildWindComponent(raw, icao){
-  if(!airportRunways[icao]) return "";
 
-  if(/VRB\d{2,3}KT/.test(raw)){
-    return `<div class="section-wind">
-      <strong>Wind Component</strong><br>
-      🌬️ Variable wind — component not calculated
-    </div>`;
+function buildWindComponent(raw, icao){
+  if(!airportRunways[icao]){
+    return `
+      <div class="section-wind">
+        <strong>Wind Component</strong><br>
+        Runway data not available
+      </div>
+    `;
   }
 
-  const w = raw.match(/(\d{3})(\d{2,3})KT/);
-  if(!w) return "";
+  // ===== VARIABLE WIND =====
+  if (/VRB\d{2,3}KT/.test(raw)) {
+    return `
+      <div class="section-wind">
+        <strong>Wind Component</strong><br>
+        🌬️ Variable wind<br>
+        Crosswind: insignificant<br>
+        Tailwind: 0 kt
+      </div>
+    `;
+  }
+
+  // ===== FIXED WIND =====
+  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
+  if (!w) {
+    return `
+      <div class="section-wind">
+        <strong>Wind Component</strong><br>
+        Wind data not available
+      </div>
+    `;
+  }
 
   const windDir = parseInt(w[1]);
   const windSpd = parseInt(w[2]);
+
   let html = `<div class="section-wind"><strong>Wind Component</strong><br>`;
 
-  airportRunways[icao].runways.forEach(r=>{
+  airportRunways[icao].runways.forEach(r => {
     let diff = Math.abs(windDir - r.h);
-    if(diff > 180) diff = 360 - diff;
-    let head = Math.round(windSpd * Math.cos(diff * Math.PI/180));
-    let cross = Math.round(windSpd * Math.sin(diff * Math.PI/180));
+    if (diff > 180) diff = 360 - diff;
+
+    let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
+    let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
+
     html += `RWY ${r.id}<br>`;
-    html += head >= 0 ? `<span class="hw">Headwind</span>: ${head} kt<br>`
-                      : `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
-    html += `Crosswind: ${Math.abs(cross)} kt<br><br>`;
+
+    // Head / Tail
+    if (head > 0) {
+      html += `<span class="hw">Headwind</span>: ${head} kt<br>`;
+    } else if (head < 0) {
+      html += `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
+    } else {
+      html += `Headwind: 0 kt<br>`;
+    }
+
+    // Crosswind (SIEMPRE visible)
+    if (Math.abs(cross) <= 2) {
+      html += `Crosswind: insignificant<br><br>`;
+    } else {
+      html += `Crosswind: ${Math.abs(cross)} kt<br><br>`;
+    }
   });
 
-  return html + `</div>`;
+  return html + `<small>Training use only</small></div>`;
 }
+
 
 });
 </script>
