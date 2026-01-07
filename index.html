@@ -107,22 +107,19 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:4px; }
   margin-top:18px;
   color:#4a6a78;
 }
+
 .codes-link {
-  display: inline-block;
-  margin-top: 12px;
-  padding: 6px 10px;
-  border: 1px solid #8ecae6;
-  border-radius: 8px;
-  font-size: 13px;
-  color: #355f5b;
-  text-decoration: none;
-  background: #ffffff;
+  display:inline-block;
+  margin-top:12px;
+  padding:6px 10px;
+  border:1px solid #8ecae6;
+  border-radius:8px;
+  font-size:13px;
+  color:#355f5b;
+  text-decoration:none;
+  background:#ffffff;
 }
-
-.codes-link:hover {
-  background: #eaf4fa;
-}
-
+.codes-link:hover { background:#eaf4fa; }
 </style>
 </head>
 
@@ -143,18 +140,16 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:4px; }
     <button class="primary-btn notam">NOTAM</button>
   </div>
 
- <div id="result" class="result-box"></div>
+  <div id="result" class="result-box"></div>
 
-<div style="text-align:center;">
-  <a class="codes-link" href="metar_taf_codes.pdf" target="_blank">
-    📄 METAR &amp; TAF Codes (PDF)
-    
-  </a>
-</div>
-
+  <div style="text-align:center;">
+    <a class="codes-link" href="metar_taf_codes.pdf" target="_blank">
+      📄 METAR &amp; TAF Codes (PDF)
+    </a>
+  </div>
 
   <div class="footer">
-    Fly smart <br>
+    Fly smart<br>
     Capi Casky
   </div>
 </div>
@@ -200,18 +195,26 @@ function buildWindComponent(raw, icao){
     return `<div class="section-wind"><strong>Wind Component</strong><br>Runway data not available</div>`;
   }
 
-  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
-
+  const w = raw.match(/(VRB|\d{3})(\d{2,3})(G\d{2,3})?KT/);
   if (!w) {
     return `<div class="section-wind"><strong>Wind Component</strong><br>Wind data not available</div>`;
   }
 
-  const windDir = parseInt(w[1]);
+  const isVRB = w[1] === "VRB";
+  const windDir = isVRB ? null : parseInt(w[1]);
   const windSpd = parseInt(w[2]);
 
   let html = `<div class="section-wind"><strong>Wind Component</strong><br>`;
 
   airportRunways[icao].runways.forEach(r => {
+
+    html += `RWY ${r.id}<br>`;
+
+    if (isVRB) {
+      html += `Wind: Variable ${windSpd} kt<br>`;
+      html += `Crosswind: variable<br><br>`;
+      return;
+    }
 
     let diff = windDir - r.h;
     if (diff > 180) diff -= 360;
@@ -220,11 +223,7 @@ function buildWindComponent(raw, icao){
     let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
     let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
 
-    let side = "";
-    if (cross > 0) side = "from the RIGHT";
-    if (cross < 0) side = "from the LEFT";
-
-    html += `RWY ${r.id}<br>`;
+    let side = cross > 0 ? "from the RIGHT" : cross < 0 ? "from the LEFT" : "";
 
     if (head > 0) {
       html += `<span class="hw">Headwind</span>: ${head} kt<br>`;
