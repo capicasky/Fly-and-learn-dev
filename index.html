@@ -154,7 +154,7 @@ h1 { text-align:center; color:#6fa89a; margin-bottom:4px; }
 
 
   <div class="footer">
-    Fly smart — understand the weather<br>
+    Fly smart <br>
     Capi Casky
   </div>
 </div>
@@ -200,7 +200,8 @@ function buildWindComponent(raw, icao){
     return `<div class="section-wind"><strong>Wind Component</strong><br>Runway data not available</div>`;
   }
 
-  const w = raw.match(/(\d{3})(\d{2,3})KT/);
+  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
+
   if (!w) {
     return `<div class="section-wind"><strong>Wind Component</strong><br>Wind data not available</div>`;
   }
