@@ -17,9 +17,7 @@ body {
   background-color: #f4f1e8;
   color: #355f5b;
 }
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 .container {
   max-width: 420px;
@@ -30,11 +28,7 @@ body {
   box-shadow: 0 6px 14px rgba(0,0,0,0.12);
 }
 
-h1 {
-  text-align:center;
-  color:#6fa89a;
-  margin-bottom:4px;
-}
+h1 { text-align:center; color:#6fa89a; margin-bottom:4px; }
 
 .subtitle {
   text-align:center;
@@ -44,25 +38,18 @@ h1 {
 }
 
 .icao-input {
-  width: 100%;
-  height: 40px;              /* altura cómoda y consistente */
-  padding: 4px 8px;          /* padding controlado */
-  font-size: 16px;
-  line-height: 1;            /* CLAVE: evita que crezca */
-  text-align: center;
-  letter-spacing: 2px;
-  border-radius: 10px;
-  border: 1px solid #8ecae6;
-  box-sizing: border-box;    /* CLAVE: incluye padding y borde */
+  width:100%;
+  height:40px;
+  padding:4px 8px;
+  font-size:16px;
+  line-height:1;
+  text-align:center;
+  letter-spacing:2px;
+  border-radius:10px;
+  border:1px solid #8ecae6;
 }
 
-
-.buttons {
-  display:flex;
-  flex-direction:column;
-  gap:12px;
-  margin-top:16px;
-}
+.buttons-row { display:flex; gap:10px; margin-top:16px; }
 
 .primary-btn {
   padding:12px;
@@ -73,27 +60,12 @@ h1 {
   background:#6fa89a;
   color:white;
 }
-.buttons-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 16px;
-}
 
-.primary-btn.half {
-  width: 50%;
-}
-
-.buttons-notam {
-  margin-top: 12px;
-  text-align: center;
-}
-
-.primary-btn.notam {
-  width: 70%;
-}
-
-
+.primary-btn.half { width:50%; }
+.primary-btn.notam { width:70%; }
 .primary-btn:hover { background:#5e9c8c; }
+
+.buttons-notam { margin-top:12px; text-align:center; }
 
 .result-box {
   margin-top:18px;
@@ -139,18 +111,6 @@ h1 {
 .hw { color:#1f6fb2; font-weight:bold; }
 .tw-danger { color:#c0392b; font-weight:bold; }
 
-.metar-codes-link {
-  display:inline-block;
-  font-size:12px;
-  color:#6fa89a;
-  border:1px solid #8ecae6;
-  padding:4px 8px;
-  border-radius:6px;
-  text-decoration:none;
-}
-
-.metar-codes-link:hover { background:#eaf4fa; }
-
 .footer {
   text-align:center;
   font-size:12px;
@@ -169,22 +129,15 @@ h1 {
   <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
 
   <div class="buttons-row">
-  <button class="primary-btn half" onclick="getMetar()">METAR</button>
-  <button class="primary-btn half" onclick="getTaf()">TAF</button>
-</div>
+    <button class="primary-btn half" onclick="getMetar()">METAR</button>
+    <button class="primary-btn half" onclick="getTaf()">TAF</button>
+  </div>
 
-<div class="buttons-notam">
-  <button class="primary-btn notam">NOTAM</button>
-</div>
-
+  <div class="buttons-notam">
+    <button class="primary-btn notam">NOTAM</button>
+  </div>
 
   <div id="result" class="result-box"></div>
-
-  <div style="text-align:center; margin-top:12px;">
-    <a href="metar_taf_codes.pdf" target="_blank" class="metar-codes-link">
-      📄 METAR & TAF Codes
-    </a>
-  </div>
 
   <div class="footer">
     Fly smart — understand the weather<br>
@@ -197,10 +150,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
 const icaoInput = document.getElementById("icao");
 const resultBox = document.getElementById("result");
-
-icaoInput.addEventListener("keydown", e => {
-  if (e.key === "Enter") getMetar();
-});
 
 const airportRunways = {
   MROC:{runways:[{id:"07",h:70},{id:"25",h:250}]},
@@ -225,96 +174,21 @@ window.getMetar = async function(){
     return;
   }
 
-  const zulu = raw.match(/\d{6}Z/);
-  const highlighted = zulu ? raw.replace(zulu[0], `<span class="zulu">${zulu[0]}</span>`) : raw;
-
   let html = `<div class="section-title">✈️ METAR</div>`;
-  html += `<div class="section-raw"><strong>RAW METAR</strong><br>${highlighted}</div>`;
-  html += decodeMetar(raw);
+  html += `<div class="section-raw"><strong>RAW METAR</strong><br>${raw}</div>`;
   html += buildWindComponent(raw, icao);
 
   resultBox.innerHTML = html;
 };
 
-window.getTaf = async function(){
-  const icao = icaoInput.value.trim().toUpperCase();
-  if(icao.length !== 4) return;
-
-  resultBox.style.display = "block";
-  resultBox.textContent = "Loading TAF...";
-
-  const url = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw`;
-  const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-  const raw = (await r.text()).trim();
-
-  if(!raw){
-    resultBox.textContent = "No TAF available.";
-    return;
-  }
-
-  let html = `<div class="section-title">📅 TAF</div>`;
-  html += `<div class="section-raw"><strong>RAW TAF</strong><br>${raw}</div>`;
-  html += decodeTaf(raw);
-
-  resultBox.innerHTML = html;
-};
-
-function decodeMetar(raw){
-  let html = `<div class="section-decoded"><strong>Decoded METAR</strong><br>`;
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})KT/);
-  if(wind) html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
-  const clouds = raw.match(/(FEW|SCT|BKN|OVC)\d{3}/g);
-  if(clouds) html += `☁️ Clouds: ${clouds.join(", ")}<br>`;
-  const temp = raw.match(/ (M?\d{2})\/(M?\d{2}) /);
-  if(temp) html += `🌡️ Temp / Dew: ${temp[1].replace("M","-")} / ${temp[2].replace("M","-")} °C<br>`;
-  const qnh = raw.match(/A(\d{4})/);
-  if(qnh) html += `🎚️ QNH: ${(qnh[1]/100).toFixed(2)} inHg<br>`;
-  return html + `</div>`;
-}
-
-function decodeTaf(raw){
-  let html = `<div class="section-decoded"><strong>Decoded TAF</strong><br>`;
-  const wind = raw.match(/(\d{3}|VRB)(\d{2})KT/);
-  if(wind) html += `🌬️ Wind: ${wind[1]}° ${wind[2]} kt<br>`;
-  const maxT = raw.match(/TX(M?\d{2})/);
-  if(maxT) html += `🌡️ Max Temp: ${maxT[1].replace("M","-")}°C<br>`;
-  const minT = raw.match(/TN(M?\d{2})/);
-  if(minT) html += `🌡️ Min Temp: ${minT[1].replace("M","-")}°C<br>`;
-  return html + `</div>`;
-}
-
-
 function buildWindComponent(raw, icao){
   if(!airportRunways[icao]){
-    return `
-      <div class="section-wind">
-        <strong>Wind Component</strong><br>
-        Runway data not available
-      </div>
-    `;
+    return `<div class="section-wind"><strong>Wind Component</strong><br>Runway data not available</div>`;
   }
 
-  // ===== VARIABLE WIND =====
-  if (/VRB\d{2,3}KT/.test(raw)) {
-    return `
-      <div class="section-wind">
-        <strong>Wind Component</strong><br>
-        🌬️ Variable wind<br>
-        Crosswind: insignificant<br>
-        Tailwind: 0 kt
-      </div>
-    `;
-  }
-
-  // ===== FIXED WIND =====
-  const w = raw.match(/(\d{3})(\d{2,3})(G\d{2,3})?KT/);
+  const w = raw.match(/(\d{3})(\d{2,3})KT/);
   if (!w) {
-    return `
-      <div class="section-wind">
-        <strong>Wind Component</strong><br>
-        Wind data not available
-      </div>
-    `;
+    return `<div class="section-wind"><strong>Wind Component</strong><br>Wind data not available</div>`;
   }
 
   const windDir = parseInt(w[1]);
@@ -323,15 +197,20 @@ function buildWindComponent(raw, icao){
   let html = `<div class="section-wind"><strong>Wind Component</strong><br>`;
 
   airportRunways[icao].runways.forEach(r => {
-    let diff = Math.abs(windDir - r.h);
-    if (diff > 180) diff = 360 - diff;
+
+    let diff = windDir - r.h;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
 
     let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
     let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
 
+    let side = "";
+    if (cross > 0) side = "from the RIGHT";
+    if (cross < 0) side = "from the LEFT";
+
     html += `RWY ${r.id}<br>`;
 
-    // Head / Tail
     if (head > 0) {
       html += `<span class="hw">Headwind</span>: ${head} kt<br>`;
     } else if (head < 0) {
@@ -340,17 +219,15 @@ function buildWindComponent(raw, icao){
       html += `Headwind: 0 kt<br>`;
     }
 
-    // Crosswind (SIEMPRE visible)
     if (Math.abs(cross) <= 2) {
       html += `Crosswind: insignificant<br><br>`;
     } else {
-      html += `Crosswind: ${Math.abs(cross)} kt<br><br>`;
+      html += `Crosswind: ${Math.abs(cross)} kt (${side})<br><br>`;
     }
   });
 
   return html + `<small>Training use only</small></div>`;
 }
-
 
 });
 </script>
