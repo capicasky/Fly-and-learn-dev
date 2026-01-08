@@ -349,7 +349,8 @@ if (metarDay !== null) {
 
 
 
-  const diffMinutes = (Date.now() - nowUTC.getTime()) / 60000;
+  const diffMinutes = (Date.now() - metarUTC.getTime()) / 60000;
+
 
   if (diffMinutes > 90) {
     isExpired = true;
