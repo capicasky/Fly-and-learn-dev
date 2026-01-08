@@ -298,9 +298,6 @@ if (metarTimeMatch) {
   metarHour = parseInt(metarTimeMatch[2], 10);
   metarMin = parseInt(metarTimeMatch[3], 10);
 }
-
-
-
     
     // ==============================
 // METAR DECODED – TIME (Z)
@@ -334,6 +331,24 @@ if (windMatch) {
   }
 }
 
+   // ==============================
+// METAR DECODED – VISIBILITY
+// ==============================
+let decodedVisibility = "";
+
+ const visMatch = raw.match(/\s(\d{4})\s/);
+
+if (visMatch) {
+  const visMeters = parseInt(visMatch[1], 10);
+
+  if (visMeters === 9999) {
+    decodedVisibility = "10 km or more";
+  } else {
+    decodedVisibility = `${visMeters / 1000} km`;
+  }
+}
+
+
       // Extraer hora del METAR (DDHHMMZ)
 let isExpired = false;
 
@@ -346,7 +361,6 @@ if (metarDay !== null) {
     metarHour,
     metarMin
   ));
-
 
 
   const diffMinutes = (Date.now() - metarUTC.getTime()) / 60000;
@@ -372,13 +386,15 @@ if (isExpired) {
 
 html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
 
-if (decodedTime || decodedWind) {
+if (decodedTime || decodedWind || decodedVisibility) {
   html += `<div class="section-raw">
     <strong>DECODED</strong><br>
     ${decodedTime ? `Time: ${decodedTime}<br>` : ""}
-    ${decodedWind ? `Wind: ${decodedWind}` : ""}
+    ${decodedWind ? `Wind: ${decodedWind}<br>` : ""}
+    ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
   </div>`;
 }
+
 
 
 html += buildWindComponent(raw, icao);
