@@ -272,6 +272,36 @@ icaoInput.addEventListener("input", function () {
 
   window.getMetar = async function(){
     const icao = icaoInput.value.trim().toUpperCase();
+     
+    // Extraer hora del METAR (DDHHMMZ)
+const timeMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
+let isExpired = false;
+
+if (timeMatch) {
+  const metarDay = parseInt(timeMatch[1], 10);
+  const metarHour = parseInt(timeMatch[2], 10);
+  const metarMin = parseInt(timeMatch[3], 10);
+
+  const now = new Date();
+  const nowUTC = new Date(
+    Date.UTC(
+      now.getUTCFullYear(),
+      now.getUTCMonth(),
+      metarDay,
+      metarHour,
+      metarMin
+    )
+  );
+
+  const diffMinutes = (Date.now() - nowUTC.getTime()) / 60000;
+
+  if (diffMinutes > 90) {
+    isExpired = true;
+  }
+}
+
+
+
     if(icao.length !== 4) return;
 
     resultBox.style.display = "block";
@@ -287,7 +317,14 @@ icaoInput.addEventListener("input", function () {
       return;
     }
 
-    let html = `<div class="section-title">✈️ METAR</div>`;
+  let html = `<div class="section-title">✈️ METAR</div>`;
+
+if (isExpired) {
+  html += `<div style="text-align:center; font-size:12px; color:#c0392b; margin-bottom:6px;">
+    ⚠️ METAR expired (last available report)
+  </div>`;
+}
+
     html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
     html += buildWindComponent(raw, icao);
 
