@@ -270,7 +270,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     let html = `<div class="section-title">✈️ METAR</div>`;
-    html += `<div class="section-raw"><strong>RAW METAR</strong><br>${raw}</div>`;
+    html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
     html += buildWindComponent(raw, icao);
 
     resultBox.innerHTML = html;
