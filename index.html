@@ -273,7 +273,16 @@ icaoInput.addEventListener("input", function () {
   window.getMetar = async function(){
     const icao = icaoInput.value.trim().toUpperCase();
      
-    // Extraer hora del METAR (DDHHMMZ)
+
+  if(icao.length !== 4) return;
+
+    resultBox.style.display = "block";
+    resultBox.textContent = "Loading METAR...";
+
+    const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
+    const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
+    const raw = (await r.text()).trim().split("\n")[0];
+      // Extraer hora del METAR (DDHHMMZ)
 const timeMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
 let isExpired = false;
 
@@ -300,16 +309,6 @@ if (timeMatch) {
   }
 }
 
-
-
-    if(icao.length !== 4) return;
-
-    resultBox.style.display = "block";
-    resultBox.textContent = "Loading METAR...";
-
-    const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
-    const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-    const raw = (await r.text()).trim().split("\n")[0];
 
 
     if(!raw || raw.startsWith("{")){
