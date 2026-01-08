@@ -282,6 +282,23 @@ icaoInput.addEventListener("input", function () {
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim().split("\n")[0];
+    
+    // ==============================
+// METAR DECODED – TIME (Z)
+// ==============================
+let decodedTime = "";
+
+const timeDecodedMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
+if (timeDecodedMatch) {
+  const d = timeDecodedMatch[1];
+  const h = timeDecodedMatch[2];
+  const m = timeDecodedMatch[3];
+  decodedTime = `Day ${d} at ${h}:${m} Z`;
+}
+
+
+
+
       // Extraer hora del METAR (DDHHMMZ)
 const timeMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
 let isExpired = false;
@@ -325,6 +342,13 @@ if (isExpired) {
 }
 
     html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
+       if (decodedTime) {
+  html += `<div class="section-raw">
+    <strong>DECODED</strong><br>
+    Time: ${decodedTime}
+  </div>`;
+}
+
     html += buildWindComponent(raw, icao);
 
     resultBox.innerHTML = html;
