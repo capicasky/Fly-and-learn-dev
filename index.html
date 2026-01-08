@@ -242,6 +242,14 @@ icaoInput.addEventListener("keydown", function(event) {
   }
 });
 
+// Limpiar resultados cuando el ICAO queda vacío
+icaoInput.addEventListener("input", function () {
+  if (icaoInput.value.trim() === "") {
+    resultBox.innerHTML = "";
+    resultBox.style.display = "none";
+  }
+});
+
 
   /* ======================================================
      BASE DE DATOS SIMPLE DE PISTAS
