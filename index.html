@@ -196,6 +196,11 @@ h1 {
   margin-bottom: 14px;
   font-weight: bold;
 }
+   .cw-warning {
+  color: #f1c40f; /* amarillo */
+  font-weight: bold;
+}
+
 
 </style>
 </head>
@@ -496,12 +501,12 @@ html += buildWindComponent(raw, icao);
         html += `Headwind: 0 kt<br>`;
       }
 
-      if (Math.abs(cross) <= 2) {
-        html += `Crosswind: insignificant<br><br>`;
-      } else {
-        html += `<span class="cw-warning">Crosswind</span>: ${Math.abs(cross)} kt (${side})<br><br>`;
+    if (Math.abs(cross) <= 2) {
+  html += `Crosswind: insignificant<br><br>`;
+} else {
+  html += `<span class="cw-warning">Crosswind</span>: ${Math.abs(cross)} kt (${side})<br><br>`;
+}
 
-      }
     });
 
     return html + `<small>Training use only</small></div>`;
