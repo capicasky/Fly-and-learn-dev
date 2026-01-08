@@ -176,6 +176,14 @@ h1 {
 .codes-link:hover {
   background:#eaf4fa;
 }
+
+  .app-time {
+  text-align: center;
+  font-size: 12px;
+  color: #6b7c85;
+  margin-bottom: 14px;
+}
+
 </style>
 </head>
 
@@ -189,6 +197,7 @@ h1 {
 
   <h1>Fly and Learn</h1>
   <div class="subtitle">Aviation study tools – student use only</div>
+  <div id="localTime" class="app-time"></div>
 
   <!-- Campo donde el usuario escribe el ICAO -->
   <input id="icao" class="icao-input" maxlength="4" placeholder="Enter ICAO">
@@ -249,6 +258,26 @@ icaoInput.addEventListener("input", function () {
     resultBox.style.display = "none";
   }
 });
+
+const timeBox = document.getElementById("localTime");
+
+function updateLocalTime() {
+  const now = new Date();
+
+  const day = String(now.getDate()).padStart(2, "0");
+  const month = String(now.getMonth() + 1).padStart(2, "0");
+  const year = String(now.getFullYear()).slice(-2);
+
+  const hours = String(now.getHours()).padStart(2, "0");
+  const minutes = String(now.getMinutes()).padStart(2, "0");
+  const seconds = String(now.getSeconds()).padStart(2, "0");
+
+  timeBox.textContent = `Date: ${day}/${month}/${year} · Local time: ${hours}:${minutes}:${seconds}`;
+}
+
+// Ejecutar una vez y luego cada segundo
+updateLocalTime();
+setInterval(updateLocalTime, 1000);
 
 
   /* ======================================================
