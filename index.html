@@ -336,7 +336,8 @@ if (windMatch) {
 // ==============================
 let decodedVisibility = "";
 
- const visMatch = raw.match(/\s(\d{4})\s/);
+ const visMatch = raw.match(/\b(\d{4})\b/);
+
 
 if (visMatch) {
   const visMeters = parseInt(visMatch[1], 10);
