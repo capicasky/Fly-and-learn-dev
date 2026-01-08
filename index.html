@@ -360,12 +360,14 @@ if (isExpired) {
 
 html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
 
-if (decodedWind) {
+if (decodedTime || decodedWind) {
   html += `<div class="section-raw">
     <strong>DECODED</strong><br>
-    Wind: ${decodedWind}
+    ${decodedTime ? `Time: ${decodedTime}<br>` : ""}
+    ${decodedWind ? `Wind: ${decodedWind}` : ""}
   </div>`;
 }
+
 
 html += buildWindComponent(raw, icao);
 
