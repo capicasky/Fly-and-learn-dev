@@ -279,7 +279,8 @@ icaoInput.addEventListener("input", function () {
 
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
-    const raw = (await r.text()).trim();
+    const raw = (await r.text()).trim().split("\n")[0];
+
 
     if(!raw || raw.startsWith("{")){
       resultBox.textContent = "METAR not available.";
