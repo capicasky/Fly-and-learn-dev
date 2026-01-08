@@ -282,19 +282,35 @@ icaoInput.addEventListener("input", function () {
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim().split("\n")[0];
+
+
+
+    // ==============================
+// METAR TIME (SINGLE SOURCE)
+// ==============================
+let metarDay = null;
+let metarHour = null;
+let metarMin = null;
+
+const metarTimeMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
+if (metarTimeMatch) {
+  metarDay = parseInt(metarTimeMatch[1], 10);
+  metarHour = parseInt(metarTimeMatch[2], 10);
+  metarMin = parseInt(metarTimeMatch[3], 10);
+}
+
+
+
     
     // ==============================
 // METAR DECODED – TIME (Z)
 // ==============================
 let decodedTime = "";
 
-const timeDecodedMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
-if (timeDecodedMatch) {
-  const d = timeDecodedMatch[1];
-  const h = timeDecodedMatch[2];
-  const m = timeDecodedMatch[3];
-  decodedTime = `Day ${d} at ${h}:${m} Z`;
+if (metarDay !== null) {
+  decodedTime = `Day ${String(metarDay).padStart(2,"0")} at ${String(metarHour).padStart(2,"0")}:${String(metarMin).padStart(2,"0")} Z`;
 }
+
 
   // ==============================
 // METAR DECODED – WIND
@@ -319,24 +335,24 @@ if (windMatch) {
 }
 
       // Extraer hora del METAR (DDHHMMZ)
-const timeMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
 let isExpired = false;
 
-if (timeMatch) {
-  const metarDay = parseInt(timeMatch[1], 10);
-  const metarHour = parseInt(timeMatch[2], 10);
-  const metarMin = parseInt(timeMatch[3], 10);
-
+if (metarDay !== null) {
   const now = new Date();
-  const nowUTC = new Date(
-    Date.UTC(
-      now.getUTCFullYear(),
-      now.getUTCMonth(),
-      metarDay,
-      metarHour,
-      metarMin
-    )
-  );
+  const metarUTC = new Date(Date.UTC(
+    now.getUTCFullYear(),
+    now.getUTCMonth(),
+    metarDay,
+    metarHour,
+    metarMin
+  ));
+
+  const diffMinutes = (Date.now() - metarUTC.getTime()) / 60000;
+  if (diffMinutes > 90) {
+    isExpired = true;
+  }
+}
+
 
   const diffMinutes = (Date.now() - nowUTC.getTime()) / 60000;
 
