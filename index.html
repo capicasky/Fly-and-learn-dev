@@ -296,6 +296,27 @@ if (timeDecodedMatch) {
   decodedTime = `Day ${d} at ${h}:${m} Z`;
 }
 
+  // ==============================
+// METAR DECODED – WIND
+// ==============================
+let decodedWind = "";
+
+const windMatch = raw.match(/(VRB|\d{3})(\d{2,3})(G\d{2,3})?KT/);
+if (windMatch) {
+  const dir = windMatch[1];
+  const spd = windMatch[2];
+  const gst = windMatch[3];
+
+  if (dir === "VRB") {
+    decodedWind = `Variable at ${spd} kt`;
+  } else {
+    decodedWind = `${dir}° at ${spd} kt`;
+  }
+
+  if (gst) {
+    decodedWind += ` (gusting ${gst.replace("G", "")} kt)`;
+  }
+}
 
 
 
@@ -326,9 +347,7 @@ if (timeMatch) {
   }
 }
 
-
-
-    if(!raw || raw.startsWith("{")){
+   if(!raw || raw.startsWith("{")){
       resultBox.textContent = "METAR not available.";
       return;
     }
@@ -341,13 +360,17 @@ if (isExpired) {
   </div>`;
 }
 
-    html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
-       if (decodedTime) {
+html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
+
+if (decodedWind) {
   html += `<div class="section-raw">
     <strong>DECODED</strong><br>
-    Time: ${decodedTime}
+    Wind: ${decodedWind}
   </div>`;
 }
+
+html += buildWindComponent(raw, icao);
+
 
     html += buildWindComponent(raw, icao);
 
