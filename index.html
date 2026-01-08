@@ -499,7 +499,8 @@ html += buildWindComponent(raw, icao);
       if (Math.abs(cross) <= 2) {
         html += `Crosswind: insignificant<br><br>`;
       } else {
-        html += `Crosswind: ${Math.abs(cross)} kt (${side})<br><br>`;
+        html += `<span class="cw-warning">Crosswind</span>: ${Math.abs(cross)} kt (${side})<br><br>`;
+
       }
     });
 
