@@ -277,7 +277,7 @@ icaoInput.addEventListener("input", function () {
     resultBox.style.display = "block";
     resultBox.textContent = "Loading METAR...";
 
-    const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=1`;
+    const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim();
 
