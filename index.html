@@ -338,9 +338,10 @@ if (isExpired) {
 
   function buildWindComponent(raw, icao){
 
-    if(!airportRunways[icao]){
-      return `<div class="section-wind"><strong>Wind Component</strong><br>Runway data not available</div>`;
-    }
+   if(!airportRunways[icao]){
+  return "";
+}
+
 
     const w = raw.match(/(VRB|\d{3})(\d{2,3})(G\d{2,3})?KT/);
     if (!w) {
