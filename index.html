@@ -318,8 +318,6 @@ if (windMatch) {
   }
 }
 
-
-
       // Extraer hora del METAR (DDHHMMZ)
 const timeMatch = raw.match(/(\d{2})(\d{2})(\d{2})Z/);
 let isExpired = false;
@@ -369,6 +367,7 @@ if (decodedWind) {
   </div>`;
 }
 
+html += buildWindComponent(raw, icao);
 
     resultBox.innerHTML = html;
   };
