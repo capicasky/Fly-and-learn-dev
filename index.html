@@ -516,7 +516,8 @@ if (airportElevation !== null) {
  
 let densityAltitude = "";
 
-if (pressureAltitude && oat !== undefined && isaTemp !== "") {
+if (pressureAltitude && oat !== null && isaTemp !== "") {
+
   densityAltitude = Math.round(
     pressureAltitude + (120 * (oat - isaTemp))
   );
