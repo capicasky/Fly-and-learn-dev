@@ -461,6 +461,17 @@ if (tempMatch) {
   decodedDew = `${dew} °C`;
 }
 
+// ==============================
+// METAR DECODED – QNH (inHg)
+// ==============================
+let decodedQNH = "";
+
+const qnhMatch = raw.match(/\bA(\d{4})\b/);
+
+if (qnhMatch) {
+  const qnhRaw = qnhMatch[1]; // ej: 2992
+  decodedQNH = `${(qnhRaw / 100).toFixed(2)} inHg`;
+}
 
      
 
@@ -508,7 +519,8 @@ if (
   decodedClouds.length ||
   decodedCeiling ||
   decodedTemp ||
-  decodedDew
+  decodedDew 
+  decodedQNH
 ) {
 
 
@@ -521,6 +533,7 @@ if (
     ${decodedCeiling ? `Ceiling: ${decodedCeiling}<br>` : ""}
     ${decodedTemp ? `Temperature: ${decodedTemp}<br>` : ""}
     ${decodedDew ? `Dew point: ${decodedDew}<br>` : ""}
+    ${decodedQNH ? `Altimeter: ${decodedQNH}<br>` : ""}
 
  </div>`;
 }
