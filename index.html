@@ -474,6 +474,8 @@ if (tempMatch) {
 
   decodedTemp = `${temp} °C`;
   decodedDew = `${dew} °C`;
+  const oat = temp; // Outside Air Temperature en °C
+
 }
 
 // ==============================
@@ -498,6 +500,20 @@ if (airportElevation && decodedQNH) {
      const qnhValue = parseFloat(decodedQNH.replace(" inHg", ""));
      pressureAltitude = Math.round(
     airportElevation + (29.92 - qnhValue) * 1000
+  );
+}
+
+ let isaTemp = "";
+
+if (airportElevation !== null) {
+  isaTemp = 15 - (2 * (airportElevation / 1000));
+}
+ 
+let densityAltitude = "";
+
+if (pressureAltitude && oat !== undefined && isaTemp !== "") {
+  densityAltitude = Math.round(
+    pressureAltitude + (120 * (oat - isaTemp))
   );
 }
 
@@ -577,10 +593,14 @@ if (airportElevation) {
       ? `Pressure altitude: ${pressureAltitude.toLocaleString()} ft<br>`
       : `Pressure altitude: —<br>`
     }
-    Density altitude: —
+    ${densityAltitude
+      ? `Density altitude: ${densityAltitude.toLocaleString()} ft`
+      : `Density altitude: —`
+    }
   </div>`;
 
 }
+
 
 
 
