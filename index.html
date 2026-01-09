@@ -494,10 +494,10 @@ if (qnhMatch) {
 
 let pressureAltitude = "";
 
-if (fieldElevation && decodedQNH) {
+if (airportElevation && decodedQNH) {
   const qnhValue = parseFloat(decodedQNH); // 29.92
   pressureAltitude = Math.round(
-    fieldElevation + (29.92 - qnhValue) * 1000
+    airportElevation + (29.92 - qnhValue) * 1000
   );
 }
 
@@ -566,6 +566,7 @@ if (
 
  </div>`;
 }
+    // cuadro performance)
 
 html += `<div class="section-raw">
   <strong>PERFORMANCE</strong><br>
