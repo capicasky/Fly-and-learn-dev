@@ -568,21 +568,21 @@ if (
 }
     // cuadro performance)
 
-html += `<div class="section-raw">
-  <strong>PERFORMANCE</strong><br>
-  ${airportElevation ? `Field elevation: ${airportElevation.toLocaleString()} ft<br>` : `Field elevation: —<br>`}
-  Pressure altitude: —<br>
-  Density altitude: —
-</div>`;
+if (airportElevation) {
 
-
-if (pressureAltitude) {
   html += `<div class="section-raw">
     <strong>PERFORMANCE</strong><br>
-    Pressure Altitude: ${pressureAltitude.toLocaleString()} ft
+    Field elevation: ${airportElevation.toLocaleString()} ft<br>
+    ${pressureAltitude
+      ? `Pressure altitude: ${pressureAltitude.toLocaleString()} ft<br>`
+      : `Pressure altitude: —<br>`
+    }
+    Density altitude: —
   </div>`;
+
 }
 
+}
 
 
 html += buildWindComponent(raw, icao);
