@@ -582,13 +582,12 @@ if (airportElevation) {
 
 }
 
-}
 
 
 html += buildWindComponent(raw, icao);
 
     resultBox.innerHTML = html;
-  };
+  }
 
   /* ======================================================
      FUNCIÓN WIND COMPONENT
@@ -596,9 +595,9 @@ html += buildWindComponent(raw, icao);
      - Calcula crosswind izquierda / derecha
   ====================================================== */
 
-  function buildWindComponent(raw, icao){
+  function buildWindComponent(raw, icao) {
 
-   if(!airportRunways[icao]){
+  if(!airportRunways[icao]){
   return "";
 }
 
@@ -652,8 +651,9 @@ html += buildWindComponent(raw, icao);
     return html + `<small>Training use only</small></div>`;
   }
 
-);
+});
 </script>
+
 
 </body>
 </html>
