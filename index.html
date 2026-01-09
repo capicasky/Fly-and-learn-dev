@@ -434,6 +434,36 @@ let decodedCeiling = "";
     }
   }
 }
+ 
+      // ==============================
+// METAR DECODED – temp and dew point
+// ==============================
+
+// ==============================
+// METAR DECODED – TEMPERATURE / DEW POINT
+// ==============================
+
+      let decodedTemp = "";
+      let decodedDew = "";
+
+    const tempMatch = raw.match(/\b(M?\d{2})\/(M?\d{2})\b/);
+
+if (tempMatch) {
+  const tempRaw = tempMatch[1];
+  const dewRaw = tempMatch[2];
+
+  const temp = tempRaw.startsWith("M")
+    ? -parseInt(tempRaw.slice(1))
+    : parseInt(tempRaw);
+
+  const dew = dewRaw.startsWith("M")
+    ? -parseInt(dewRaw.slice(1))
+    : parseInt(dewRaw);
+
+  decodedTemp = `${temp} °C`;
+  decodedDew = `${dew} °C`;
+}
+
 
      
 
@@ -474,7 +504,7 @@ if (isExpired) {
 
 html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
 
-if (decodedTime || decodedWind || decodedVisibility || decodedClouds.length || decodedCeiling) {
+if (decodedTime || decodedWind || decodedVisibility || decodedTemp || decodedDew) {
 
 
   html += `<div class="section-raw">
@@ -484,6 +514,9 @@ if (decodedTime || decodedWind || decodedVisibility || decodedClouds.length || d
     ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
     ${decodedClouds.length ? `Clouds: ${decodedClouds.join(", ")}<br>` : ""}
     ${decodedCeiling ? `Ceiling: ${decodedCeiling}<br>` : ""}
+    ${decodedTemp ? `Temperature: ${decodedTemp}<br>` : ""}
+    ${decodedDew ? `Dew point: ${decodedDew}<br>` : ""}
+
  </div>`;
 }
 
