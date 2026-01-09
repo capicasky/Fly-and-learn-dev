@@ -488,6 +488,19 @@ if (qnhMatch) {
   decodedQNH = `${(qnhRaw / 100).toFixed(2)} inHg`;
 }
 
+// ==============================
+// PERFORMANCE – PRESSURE ALTITUDE
+// ==============================
+
+let pressureAltitude = "";
+
+if (fieldElevation && decodedQNH) {
+  const qnhValue = parseFloat(decodedQNH); // 29.92
+  pressureAltitude = Math.round(
+    fieldElevation + (29.92 - qnhValue) * 1000
+  );
+}
+
      
 
       // Extraer hora del METAR (DDHHMMZ)
@@ -560,6 +573,15 @@ html += `<div class="section-raw">
   Pressure altitude: —<br>
   Density altitude: —
 </div>`;
+
+
+if (pressureAltitude) {
+  html += `<div class="section-raw">
+    <strong>PERFORMANCE</strong><br>
+    Pressure Altitude: ${pressureAltitude.toLocaleString()} ft
+  </div>`;
+}
+
 
 
 html += buildWindComponent(raw, icao);
