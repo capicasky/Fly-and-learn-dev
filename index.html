@@ -418,8 +418,24 @@ if (cloudMatches) {
     decodedClouds.push(`${description} at ${height.toLocaleString()} ft`);
   });
 }
+      // ==============================
+// METAR DECODED – cilling
+// ==============================
+let decodedCeiling = "";
+    
+   if (cloudMatches) {
+  for (let c of cloudMatches) {
+    const type = c.substring(0, 3);
 
+    if (type === "BKN" || type === "OVC") {
+      const height = parseInt(c.substring(3, 6), 10) * 100;
+      decodedCeiling = `${height.toLocaleString()} ft`;
+      break; // el primer BKN/OVC es el ceiling
+    }
+  }
+}
 
+     
 
       // Extraer hora del METAR (DDHHMMZ)
 let isExpired = false;
@@ -458,7 +474,8 @@ if (isExpired) {
 
 html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
 
-if (decodedTime || decodedWind || decodedVisibility || decodedClouds.length) {
+if (decodedTime || decodedWind || decodedVisibility || decodedClouds.length || decodedCeiling) {
+
 
   html += `<div class="section-raw">
     <strong>DECODED</strong><br>
@@ -466,6 +483,7 @@ if (decodedTime || decodedWind || decodedVisibility || decodedClouds.length) {
     ${decodedWind ? `Wind: ${decodedWind}<br>` : ""}
     ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
     ${decodedClouds.length ? `Clouds: ${decodedClouds.join(", ")}<br>` : ""}
+    ${decodedCeiling ? `Ceiling: ${decodedCeiling}<br>` : ""}
  </div>`;
 }
 
