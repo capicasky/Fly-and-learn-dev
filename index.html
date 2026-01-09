@@ -460,7 +460,12 @@ let decodedCeiling = "";
 
     const tempMatch = raw.match(/\b(M?\d{2})\/(M?\d{2})\b/);
 
+    let oat = null;
+   
+
 if (tempMatch) {
+  
+  
   const tempRaw = tempMatch[1];
   const dewRaw = tempMatch[2];
 
@@ -474,7 +479,7 @@ if (tempMatch) {
 
   decodedTemp = `${temp} °C`;
   decodedDew = `${dew} °C`;
-  const oat = temp; // Outside Air Temperature en °C
+   oat = temp; // Outside Air Temperature en °C
 
 }
 
