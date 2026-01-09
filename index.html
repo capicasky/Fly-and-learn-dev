@@ -495,8 +495,8 @@ if (qnhMatch) {
 let pressureAltitude = "";
 
 if (airportElevation && decodedQNH) {
-  const qnhValue = parseFloat(decodedQNH); // 29.92
-  pressureAltitude = Math.round(
+     const qnhValue = parseFloat(decodedQNH.replace(" inHg", ""));
+     pressureAltitude = Math.round(
     airportElevation + (29.92 - qnhValue) * 1000
   );
 }
