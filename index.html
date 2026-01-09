@@ -396,6 +396,30 @@ if (visMatch) {
   }
 }
 
+// ==============================
+// METAR DECODED – CLOUDS
+// ==============================
+let decodedClouds = [];
+const cloudMatches = raw.match(/\b(FEW|SCT|BKN|OVC)\d{3}(CB|TCU)?\b/g);
+if (cloudMatches) {
+  cloudMatches.forEach(c => {
+    const type = c.substring(0, 3);
+    const height = parseInt(c.substring(3, 6), 10) * 100;
+
+    let description = "";
+
+    switch (type) {
+      case "FEW": description = "Few clouds"; break;
+      case "SCT": description = "Scattered clouds"; break;
+      case "BKN": description = "Broken clouds"; break;
+      case "OVC": description = "Overcast"; break;
+    }
+
+    decodedClouds.push(`${description} at ${height.toLocaleString()} ft`);
+  });
+}
+
+
 
       // Extraer hora del METAR (DDHHMMZ)
 let isExpired = false;
@@ -434,13 +458,15 @@ if (isExpired) {
 
 html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
 
-if (decodedTime || decodedWind || decodedVisibility) {
+if (decodedTime || decodedWind || decodedVisibility || decodedClouds.length) {
+
   html += `<div class="section-raw">
     <strong>DECODED</strong><br>
     ${decodedTime ? `Time: ${decodedTime}<br>` : ""}
     ${decodedWind ? `Wind: ${decodedWind}<br>` : ""}
     ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
-  </div>`;
+    ${decodedClouds.length ? `Clouds: ${decodedClouds.join(", ")}<br>` : ""}
+ </div>`;
 }
 
 
