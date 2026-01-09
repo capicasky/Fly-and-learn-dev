@@ -300,15 +300,28 @@ setInterval(updateLocalTime, 1000);
 
   /* ======================================================
      BASE DE DATOS SIMPLE DE PISTAS
-     SOLO estos aeropuertos tienen wind component
+     SOLO estos aeropuertos tienen wind component y elevacion
   ====================================================== */
 
   const airportRunways = {
-    MROC:{runways:[{id:"07",h:70},{id:"25",h:250}]},
-    MRPV:{runways:[{id:"10",h:100},{id:"28",h:280}]},
-    MRLB:{runways:[{id:"07",h:70},{id:"25",h:250}]},
-    MRLM:{runways:[{id:"05",h:50},{id:"23",h:230}]}
-  };
+  MROC:{
+    elevation: 3022,
+    runways:[{id:"07",h:70},{id:"25",h:250}]
+  },
+  MRPV:{
+    elevation: 3287,
+    runways:[{id:"10",h:100},{id:"28",h:280}]
+  },
+  MRLB:{
+    elevation: 15,
+    runways:[{id:"07",h:70},{id:"25",h:250}]
+  },
+  MRLM:{
+    elevation: 164,
+    runways:[{id:"05",h:50},{id:"23",h:230}]
+  }
+};
+
 
   /* ======================================================
      FUNCIÓN METAR
@@ -329,6 +342,8 @@ setInterval(updateLocalTime, 1000);
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim().split("\n")[0];
+    const airportData = airportRunways[icao];
+    const airportElevation = airportData?.elevation ?? null;
 
 
 
@@ -539,6 +554,12 @@ if (
  </div>`;
 }
 
+html += `<div class="section-raw">
+  <strong>PERFORMANCE</strong><br>
+  ${airportElevation ? `Field elevation: ${airportElevation.toLocaleString()} ft<br>` : `Field elevation: —<br>`}
+  Pressure altitude: —<br>
+  Density altitude: —
+</div>`;
 
 
 html += buildWindComponent(raw, icao);
