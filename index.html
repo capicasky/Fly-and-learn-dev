@@ -593,6 +593,13 @@ if (
 
  </div>`;
 }
+let isaDev = "";
+
+if (oat !== null && isaTemp !== "") {
+  isaDev = oat - isaTemp;
+}
+
+
     // cuadro performance)
 
 if (airportElevation) {
@@ -608,9 +615,15 @@ if (airportElevation) {
       ? `Density altitude: ${densityAltitude.toLocaleString()} ft`
       : `Density altitude: —`
     }
+      ${isaDev !== ""
+  ? `ISA deviation: ${isaDev > 0 ? "+" : ""}${isaDev.toFixed(1)} °C<br>`
+  : `ISA deviation: —<br>`
+}
   </div>`;
 
 }
+  
+
 
 
 
