@@ -125,7 +125,6 @@ h1 {
   border:1px solid #8ecae6;
   font-family:"Courier New", monospace;
   font-size:14px;
-  background-color: a786af;
   border-left: #1f6fb2 5px solid;
   border-right: #1f6fb2 5px solid;
   display:none; /* Se muestra solo cuando hay datos */
@@ -231,9 +230,10 @@ h1 {
     <button class="primary-btn half" onclick="getTaf()">TAF</button>
   </div>
 
-  <!-- Botón NOTAM (aún sin lógica) -->
+  <!-- Botón NOTAM llama notams raw -->
   <div class="buttons-notam">
-    <button class="primary-btn notam">NOTAM</button>
+<button class="primary-btn notam" onclick="getNotam()">NOTAM</button>
+
   </div>
 
   <!-- Aquí se muestran los resultados -->
@@ -437,6 +437,9 @@ if (cloudMatches) {
 
     decodedClouds.push(`${description} at ${height.toLocaleString()} ft`);
   });
+
+
+
 }
       // ==============================
 // METAR DECODED – ceilling
@@ -624,14 +627,51 @@ if (airportElevation) {
 }
   
 
-
-
-
-
 html += buildWindComponent(raw, icao);
 
     resultBox.innerHTML = html;
   }
+   
+/* ======================================================
+   FUNCIÓN NOTAM (RAW ONLY – FAA)
+====================================================== */
+
+window.getNotam = async function () {
+
+  const icao = icaoInput.value.trim().toUpperCase();
+  if (icao.length !== 4) return;
+
+  resultBox.style.display = "block";
+  resultBox.textContent = "Loading NOTAMs...";
+
+  try {
+
+    const url = `https://aviationweather.gov/api/data/notam?ids=${icao}&format=raw`;
+    const r = await fetch(
+      `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
+    );
+
+    const text = (await r.text()).trim();
+
+    if (!text) {
+      resultBox.textContent = "No NOTAMs available.";
+      return;
+    }
+
+    resultBox.innerHTML = `
+      <div class="section-title">📢 NOTAM</div>
+      <div class="section-raw">
+        <strong>RAW</strong><br>
+        <pre style="white-space:pre-wrap;margin:0;">${text}</pre>
+      </div>
+      <small>Official NOTAMs – raw format, no interpretation</small>
+    `;
+
+  } catch (err) {
+    resultBox.textContent = "Error loading NOTAMs.";
+  }
+};
+
 
   /* ======================================================
      FUNCIÓN WIND COMPONENT
