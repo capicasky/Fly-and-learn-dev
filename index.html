@@ -204,6 +204,23 @@ h1 {
   color: #f1c40f; /* amarillo */
   font-weight: bold;
 }
+  
+/* ===============================
+   GUST ALERT – ESTILO VISUAL
+================================ */
+
+#gustAlert {
+  display: none;           /* oculto por defecto */
+  margin-top: 12px;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #c0392b;
+  background: #fdecea;
+  border: 1px solid #e0b4b4;
+  border-radius: 8px;
+}
+
 
 
 </style>
@@ -236,23 +253,32 @@ h1 {
 
   </div>
 
-  <!-- Aquí se muestran los resultados -->
-  <div id="result" class="result-box"></div>
+ <!-- ======================================================
+     ALERTA DE RACHAS (GUST ALERT)
+====================================================== -->
 
-  <!-- Link a PDF de códigos -->
-  <div style="text-align:center;">
-    <a class="codes-link" href="metar_taf_codes.pdf" target="_blank">
-      📄 METAR &amp; TAF Codes (PDF)
-    </a>
-  </div>
+<div id="gustAlert">GUST ALERT</div>
 
-  <!-- Firma -->
-  <div class="footer">
-    Fly smart<br>
-    Capi Casky
-  </div>
+<!-- Aquí se muestran los resultados -->
+<div id="result" class="result-box"></div>
+
+<!-- Link a PDF de códigos -->
+<div style="text-align:center;">
+  <a class="codes-link" href="metar_taf_codes.pdf" target="_blank">
+    📄 METAR &amp; TAF Codes (PDF)
+  </a>
+</div>
+
+<!-- Firma -->
+<div class="footer">
+  Fly smart<br>
+  Capi Casky
+</div>
+
 
 </div>
+ 
+
 
 <script>
 /* ======================================================
@@ -349,6 +375,20 @@ setInterval(updateLocalTime, 1000);
     const raw = (await r.text()).trim().split("\n")[0];
     const airportData = airportRunways[icao];
     const airportElevation = airportData?.elevation ?? null;
+
+
+    // ==============================
+// GUST ALERT (solo informativo)
+// ==============================
+const gustBox = document.getElementById("gustAlert");
+
+if (gustBox) {
+  if (raw.includes("G")) {
+    gustBox.style.display = "block";
+  } else {
+    gustBox.style.display = "none";
+  }
+}
 
 
 
