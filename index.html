@@ -615,12 +615,12 @@ if (airportElevation) {
       : `Pressure altitude: —<br>`
     }
     ${densityAltitude
-      ? `Density altitude: ${densityAltitude.toLocaleString()} ft`
-      : `Density altitude: —`
+      ? `Density altitude: ${densityAltitude.toLocaleString()} ft<br>`
+      : `Density altitude: —<br>`
     }
       ${isaDev !== ""
-  ? `ISA deviation: ${isaDev > 0 ? "+" : ""}${isaDev.toFixed(1)} °C<br>`
-  : `ISA deviation: —<br>`
+  ? `ISA Dev: ${isaDev > 0 ? "+" : ""}${isaDev.toFixed(1)} °C<br>`
+  : `ISA Dev: —<br>`
 }
   </div>`;
 
