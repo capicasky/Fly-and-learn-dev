@@ -688,14 +688,14 @@ window.getNotam = async function () {
 
     const w = raw.match(/(VRB|\d{3})(\d{2,3})(G\d{2,3})?KT/);
     if (!w) {
-      return `<div class="section-wind"><strong>Wind Component</strong><br>Wind data not available</div>`;
+      return `<div class="section-wind"><strong>WIND COMPONENT</strong><br>Wind data not available</div>`;
     }
 
     const isVRB = w[1] === "VRB";
     const windDir = isVRB ? null : parseInt(w[1]);
     const windSpd = parseInt(w[2]);
 
-    let html = `<div class="section-wind"><strong>Wind Component</strong><br>`;
+    let html = `<div class="section-wind"><strong>WIND COMPONENT</strong><br>`;
 
     airportRunways[icao].runways.forEach(r => {
 
