@@ -222,6 +222,48 @@ h1 {
 }
 
 
+/* ===============================
+   FORMULA HELPER (TOOLTIPS)
+   Fly and Learn standard
+================================ */
+
+.formula-info {
+  position: relative;
+  display: inline-block;
+  margin-left: 6px;
+  font-size: 13px;
+  color: #6fa89a;
+  cursor: help;
+}
+
+.formula-tooltip {
+  position: absolute;
+  bottom: 140%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 260px;
+
+  background: #f4f1e8;
+  color: #355f5b;
+  padding: 10px;
+  border-radius: 8px;
+  border: 1px solid #6fa89a;
+
+  font-size: 12px;
+  line-height: 1.4;
+
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.2s ease;
+  z-index: 999;
+}
+
+.formula-info:hover .formula-tooltip {
+  opacity: 1;
+  visibility: visible;
+}
+
+
 
 </style>
 </head>
@@ -364,6 +406,23 @@ setInterval(updateLocalTime, 1000);
   window.getMetar = async function(){
     const icao = icaoInput.value.trim().toUpperCase();
      
+    // 🎁 Easter Egg – Dyln
+if (icao === "DYLN") {
+  resultBox.style.display = "block";
+  resultBox.innerHTML = `
+    <div style="text-align:center; padding:20px;">
+      ✈️💚<br><br>
+      <strong>Hi Dylan!</strong><br><br>
+      <strong>DADDY LOVES YOU!</strong><br><br>
+      <strong>YOU WILL ALWAYS BY MY BB !</strong><br><br>
+      Your dad flies airplanes<br>
+      and built this app thinking of you.<br><br>
+      Fly smart, little captain 🚀
+    </div>
+  `;
+  return;
+}
+
 
   if(icao.length !== 4) return;
 
@@ -382,15 +441,16 @@ setInterval(updateLocalTime, 1000);
 // ==============================
 const gustBox = document.getElementById("gustAlert");
 
+// detectar GUST solo cuando viene en el grupo de viento (GxxKT)
+const gustMatch = raw.match(/(VRB|\d{3})\d{2,3}G\d{2,3}KT/);
+
 if (gustBox) {
-  if (raw.includes("G")) {
+  if (gustMatch) {
     gustBox.style.display = "block";
   } else {
     gustBox.style.display = "none";
   }
 }
-
-
 
     // ==============================
 // METAR TIME (SINGLE SOURCE)
@@ -654,11 +714,33 @@ if (airportElevation) {
       ? `Pressure altitude: ${pressureAltitude.toLocaleString()} ft<br>`
       : `Pressure altitude: —<br>`
     }
-    ${densityAltitude
-      ? `Density altitude: ${densityAltitude.toLocaleString()} ft<br>`
-      : `Density altitude: —<br>`
-    }
-      ${isaDev !== ""
+ ${densityAltitude
+  ? `Density altitude
+     <span class="formula-info">ⓘ
+       <span class="formula-tooltip">
+         Density Altitude (approx)
+
+         DA = PA + 120 × (OAT − ISA)
+
+         Approximation – awareness only
+       </span>
+     </span>
+     : ${densityAltitude.toLocaleString()} ft<br>`
+  : `Density altitude
+     <span class="formula-info">ⓘ
+       <span class="formula-tooltip">
+         Density Altitude (approx)
+
+         DA = PA + 120 × (OAT − ISA)
+
+         Approximation – awareness only
+       </span>
+     </span>
+     : —<br>`
+}
+
+
+  ${isaDev !== ""
   ? `ISA Dev: ${isaDev > 0 ? "+" : ""}${isaDev.toFixed(1)} °C<br>`
   : `ISA Dev: —<br>`
 }
