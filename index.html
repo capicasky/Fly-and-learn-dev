@@ -874,7 +874,23 @@ window.getNotam = async function () {
     const windDir = isVRB ? null : parseInt(w[1]);
     const windSpd = parseInt(w[2]);
 
-    let html = `<div class="section-wind"><strong>WIND COMPONENT</strong><br>`;
+    let html = `<div class="section-wind">
+  <strong>WIND COMPONENT</strong>
+  <span class="formula-info">ⓘ
+    <span class="formula-tooltip">
+      Wind component (approximation)
+
+      Headwind = Wind × cos(angle)
+      Crosswind = Wind × sin(angle)
+
+      Steady wind only
+      Gusts not used in calculations
+
+      Awareness only
+    </span>
+  </span><br>`;
+
+
 
     airportRunways[icao].runways.forEach(r => {
 
