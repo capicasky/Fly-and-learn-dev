@@ -221,6 +221,12 @@ h1 {
   border-radius: 8px;
 }
 
+#gustAlert small {
+  font-size: 11px;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
 
 /* ===============================
    FORMULA HELPER (TOOLTIPS)
@@ -299,7 +305,15 @@ h1 {
      ALERTA DE RACHAS (GUST ALERT)
 ====================================================== -->
 
-<div id="gustAlert">GUST ALERT</div>
+<div id="gustAlert">
+  ⚠️ GUST ALERT<br>
+  <small>
+    Gusts reported in METAR.<br>
+    Not used in wind component calculations.<br>
+    Awareness only.
+  </small>
+</div>
+
 
 <!-- Aquí se muestran los resultados -->
 <div id="result" class="result-box"></div>
@@ -710,40 +724,83 @@ if (airportElevation) {
   html += `<div class="section-raw">
     <strong>PERFORMANCE</strong><br>
     Field elevation: ${airportElevation.toLocaleString()} ft<br>
+  
     ${pressureAltitude
-      ? `Pressure altitude: ${pressureAltitude.toLocaleString()} ft<br>`
-      : `Pressure altitude: —<br>`
-    }
+  ? `Pressure altitude
+     <span class="formula-info">ⓘ
+       <span class="formula-tooltip">
+         Pressure Altitude (approximation)
+
+         PA = Field Elevation
+              + [ (29.92 − Altimeter) × 1000 ]
+
+
+         Awareness only 
+       </span>
+     </span>
+     : ${pressureAltitude.toLocaleString()} ft<br>`
+  : `Pressure altitude: —<br>`
+}
+
  ${densityAltitude
   ? `Density altitude
      <span class="formula-info">ⓘ
        <span class="formula-tooltip">
-         Density Altitude (approx)
+         Density Altitude (approximation)
 
          DA = PA + 120 × (OAT − ISA)
 
-         Approximation – awareness only
+        Awareness only
+
        </span>
      </span>
      : ${densityAltitude.toLocaleString()} ft<br>`
   : `Density altitude
      <span class="formula-info">ⓘ
        <span class="formula-tooltip">
-         Density Altitude (approx)
+         Density Altitude (approximation)
 
          DA = PA + 120 × (OAT − ISA)
 
-         Approximation – awareness only
+         Awareness only
+
        </span>
      </span>
      : —<br>`
 }
 
 
-  ${isaDev !== ""
-  ? `ISA Dev: ${isaDev > 0 ? "+" : ""}${isaDev.toFixed(1)} °C<br>`
-  : `ISA Dev: —<br>`
+${isaDev !== ""
+  ? `ISA Dev
+     <span class="formula-info">ⓘ
+       <span class="formula-tooltip">
+         ISA Deviation (approximation)
+
+         ISA Dev = OAT − ISA
+
+         Where:
+         OAT = Outside Air Temperature
+         ISA = Standard Atmosphere temperature
+
+         Awareness only
+
+       </span>
+     </span>
+     : ${isaDev > 0 ? "+" : ""}${isaDev.toFixed(1)} °C<br>`
+  : `ISA Dev
+     <span class="formula-info">ⓘ
+       <span class="formula-tooltip">
+         ISA Deviation (approximation)
+
+         ISA Dev = OAT − ISA
+
+         Awareness only
+
+       </span>
+     </span>
+     : —<br>`
 }
+
   </div>`;
 
 }
