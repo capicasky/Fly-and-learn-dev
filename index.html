@@ -113,6 +113,7 @@ h1 {
   text-align:center;
 }
 
+
 /* ======================================================
    CAJA DE RESULTADOS (METAR / TAF / WIND)
 ====================================================== */
@@ -129,6 +130,22 @@ h1 {
   border-right: #1f6fb2 5px solid;
   display:none; /* Se muestra solo cuando hay datos */
 }
+/* Normalizar peso de fuente en resultados */
+.result-box,
+.result-box * {
+  font-weight: 400;
+}
+
+.result-box strong {
+  font-weight: 600;
+}
+
+.result-box pre {
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+}
+
 
 /* ======================================================
    SECCIONES INTERNAS DEL RESULTADO
@@ -269,9 +286,46 @@ h1 {
   visibility: visible;
 }
 
+/* ======================================================
+    HIGHLIGHT METAR / TAF colores especiales
+====================================================== */
+.metar-gust {
+  color: #e67e22;      /* naranja */
+  font-weight: bold;
+}
+
+.metar-cavok {
+  color: #2ecc71;   /* verde */
+  font-weight: bold;
+}
+
+.metar-wind-strong {
+  color: #e74c3c;   /* rojo suave */
+  font-weight: bold;
+}
+.metar-vis-low {
+  color: #c0392b;      /* rojo */
+  font-weight: bold;
+}
+
+.metar-ceiling-low {
+  color: #8e44ad;   /* morado suave */
+  font-weight: bold;
+}
+
+.metar-ts {
+  color: #9b59b6;   /* morado tormenta */
+  font-weight: bold;
+}
+ 
+.metar-fg {
+  color: #34495e;   /* gris oscuro / niebla */
+  font-weight: bold;
+}
+
 
 /* ===============================
-   TAF HIGHLIGHT (RAW ONLY)
+   TAF HIGHLIGHT (RAW ONLY) colores
 ================================ */
 
 .taf-fm {
@@ -445,9 +499,55 @@ setInterval(updateLocalTime, 1000);
     runways:[{id:"05",h:50},{id:"23",h:230}]
   }
 };
+   
+  /* ======================================================
+     FUNCIÓN HIGHLIGHT METAR
+     Colorea elementos importantes del METAR
+  ====================================================== */
+
+
+function highlightMetar(raw) {
+  return raw
+    // METAR keyword
+    .replace(/\bMETAR\b/g, `<strong>METAR</strong>`)
+
+    // Strong wind
+    .replace(/\b((?:VRB|\d{3})(1[5-9]|[2-9]\d)KT)\b/g,
+      `<span class="metar-wind-strong">$1</span>`
+    )
+
+    // Gusts
+    .replace(/G\d{2,3}KT/g,
+      `<span class="metar-gust">$&</span>`
+    )
+
+    // Thunderstorms (más específicos primero)
+    .replace(/\b(VCTS|TSRA|TSGR|TS)\b/g,
+      `<span class="metar-ts">$1</span>`
+    )
+
+    // Fog (FG)
+    .replace(/\bFG\b/g,
+      `<span class="metar-fg">FG</span>`
+    )
+
+    // CAVOK (muy genérico → al final)
+    .replace(/\bCAVOK\b/g,
+      `<span class="metar-cavok">CAVOK</span>`
+    )
+    // Low ceiling in RAW (BKN / OVC ≤ 1000 ft)
+   .replace(/\b(BKN|OVC)(00[0-9]|0[0-9]{2}|100)\b/g,
+     match => `<span class="metar-ceiling-low">${match}</span>`
+);
+
+    
+}
+
+
 
 
   /* ======================================================
+  
      FUNCIÓN METAR
      - Valida ICAO
      - Descarga METAR
@@ -483,6 +583,10 @@ if (icao === "DYLN") {
     const url = `https://aviationweather.gov/api/data/metar?ids=${icao}&format=raw&hours=12`;
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim().split("\n")[0];
+// 🔴 TEST METAR (solo para pruebas visuales)
+  //const raw = "METAR MROC 151900Z 08018G28KT 0800 FG TSRA BKN005 OVC020 A2992";
+
+    
     const airportData = airportRunways[icao];
     const airportElevation = airportData?.elevation ?? null;
 
@@ -556,6 +660,16 @@ let decodedVisibility = "";
 
  const visMatch = raw.match(/\b(\d{4})\b/);
 
+ let isLowVisibility = false;
+
+if (visMatch) {
+  const visMeters = parseInt(visMatch[1], 10);
+
+  if (visMeters !== 9999 && visMeters <= 3000) {
+    isLowVisibility = true;
+  }
+}
+
 
 if (visMatch) {
   const visMeters = parseInt(visMatch[1], 10);
@@ -608,6 +722,17 @@ let decodedCeiling = "";
     }
   }
 }
+
+let isLowCeiling = false;
+
+if (decodedCeiling) {
+  const ceilingFt = parseInt(decodedCeiling.replace(/[^0-9]/g, ""), 10);
+
+ if (ceilingFt <= 1000) {
+    isLowCeiling = true;
+  }
+}
+
  
       // ==============================
       // METAR DECODED – temp and dew point
@@ -711,7 +836,13 @@ if (metarDay !== null) {
       return;
     }
 
-  let html = `<div class="section-title">✈️ METAR</div>`;
+ let html = `
+  <div class="section-raw" style="text-align:center;">
+    <strong>✈️ METAR</strong>
+  </div>
+`;
+
+
 
 if (isExpired) {
   html += `<div style="text-align:center; font-size:12px; color:#c0392b; margin-bottom:6px;">
@@ -719,7 +850,8 @@ if (isExpired) {
   </div>`;
 }
 
-html += `<div class="section-raw"><strong>RAW</strong><br>${raw}</div>`;
+html += `<div class="section-raw"><strong>RAW</strong><br>${highlightMetar(raw)}</div>`;
+
 
 if (
   decodedTime ||
@@ -738,12 +870,12 @@ if (
     <strong>DECODED</strong><br>
     ${decodedTime ? `Time: ${decodedTime}<br>` : ""}
     ${decodedWind ? `Wind: ${decodedWind}<br>` : ""}
-    ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
     ${decodedClouds.length ? `Clouds: ${decodedClouds.join(", ")}<br>` : ""}
-    ${decodedCeiling ? `Ceiling: ${decodedCeiling}<br>` : ""}
     ${decodedTemp ? `Temperature: ${decodedTemp}<br>` : ""}
     ${decodedDew ? `Dew point: ${decodedDew}<br>` : ""}
     ${decodedQNH ? `Altimeter: ${decodedQNH}<br>` : ""}
+    ${decodedCeiling ? `Ceiling: ${decodedCeiling}<br>` : ""}
+
 
  </div>`;
 }
@@ -873,6 +1005,10 @@ window.getTaf = async function () {
   const icao = icaoInput.value.trim().toUpperCase();
   if (icao.length !== 4) return;
 
+  const gustBox = document.getElementById("gustAlert");
+if (gustBox) gustBox.style.display = "none";
+
+
   resultBox.style.display = "block";
   resultBox.textContent = "Loading TAF...";
 
@@ -918,6 +1054,10 @@ window.getNotam = function () {
 
   const icao = icaoInput.value.trim().toUpperCase();
   if (icao.length !== 4) return;
+
+  const gustBox = document.getElementById("gustAlert");
+if (gustBox) gustBox.style.display = "none";
+
 
   resultBox.style.display = "block";
   resultBox.innerHTML = `
