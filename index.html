@@ -270,6 +270,43 @@ h1 {
 }
 
 
+/* ===============================
+   TAF HIGHLIGHT (RAW ONLY)
+================================ */
+
+.taf-fm {
+  color: #2e8b57; /* verde */
+  font-weight: bold;
+}
+
+.taf-tempo {
+  color: #f1c40f; /* amarillo */
+  font-weight: bold;
+}
+
+.taf-prob {
+  color: #e67e22; /* naranja */
+  font-weight: bold;
+}
+
+.taf-becmg {
+  color: #3498db; /* azul */
+  font-weight: bold;
+}
+
+.taf-tx {
+  color: #e74c3c; /* rojo calor */
+  font-weight: bold;
+}
+
+.taf-tn {
+  color: #3498db; /* celeste frío */
+  font-weight: bold;
+}
+
+
+
+
 
 </style>
 </head>
@@ -811,6 +848,22 @@ html += buildWindComponent(raw, icao);
     resultBox.innerHTML = html;
   }
    
+function highlightTaf(raw) {
+  return raw
+    .replace(/\bTAF\b/g, `<strong>TAF</strong>`)
+    .replace(/\bFM\d{6}\b/g, match => `<span class="taf-fm">${match}</span>`)
+    .replace(/\bBECMG\b/g, `<span class="taf-becmg">BECMG</span>`)
+    .replace(/\bTEMPO\b/g, `<span class="taf-tempo">TEMPO</span>`)
+    .replace(/\bPROB\d{2}\b/g, match => `<span class="taf-prob">${match}</span>`)
+    .replace(/\bTX\d{2}\/\d{4}Z\b/g, match => `<span class="taf-tx">${match}</span>`)
+    .replace(/\bTN\d{2}\/\d{4}Z\b/g, match => `<span class="taf-tn">${match}</span>`);
+}
+
+
+
+
+
+
 /* ======================================================
    FUNCIÓN TAF (RAW ONLY)
 ====================================================== */
@@ -842,7 +895,8 @@ window.getTaf = async function () {
 
       <div class="section-raw">
         <strong>RAW</strong><br>
-        <pre style="white-space:pre-wrap;margin:0;">${raw}</pre>
+        <pre style="white-space:pre-wrap;margin:0;">${highlightTaf(raw)}</pre>
+
       </div>
 
       <small>Official TAF – raw format</small>
