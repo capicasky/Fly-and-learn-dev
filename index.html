@@ -812,44 +812,74 @@ html += buildWindComponent(raw, icao);
   }
    
 /* ======================================================
-   FUNCIÓN NOTAM (RAW ONLY – FAA)
+   FUNCIÓN TAF (RAW ONLY)
 ====================================================== */
 
-window.getNotam = async function () {
+window.getTaf = async function () {
 
   const icao = icaoInput.value.trim().toUpperCase();
   if (icao.length !== 4) return;
 
   resultBox.style.display = "block";
-  resultBox.textContent = "Loading NOTAMs...";
+  resultBox.textContent = "Loading TAF...";
 
   try {
 
-    const url = `https://aviationweather.gov/api/data/notam?ids=${icao}&format=raw`;
+    const url = `https://aviationweather.gov/api/data/taf?ids=${icao}&format=raw`;
     const r = await fetch(
       `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`
     );
 
-    const text = (await r.text()).trim();
+    const raw = (await r.text()).trim();
 
-    if (!text) {
-      resultBox.textContent = "No NOTAMs available.";
+    if (!raw || raw.startsWith("{")) {
+      resultBox.textContent = "TAF not available.";
       return;
     }
 
     resultBox.innerHTML = `
-      <div class="section-title">📢 NOTAM</div>
+      <div class="section-title">📄 TAF</div>
+
       <div class="section-raw">
         <strong>RAW</strong><br>
-        <pre style="white-space:pre-wrap;margin:0;">${text}</pre>
+        <pre style="white-space:pre-wrap;margin:0;">${raw}</pre>
       </div>
-      <small>Official NOTAMs – raw format, no interpretation</small>
+
+      <small>Official TAF – raw format</small>
     `;
 
   } catch (err) {
-    resultBox.textContent = "Error loading NOTAMs.";
+    resultBox.textContent = "Error loading TAF.";
   }
 };
+
+
+
+
+/* ======================================================
+   FUNCIÓN NOTAM (RAW ONLY – FAA)
+====================================================== */
+
+window.getNotam = function () {
+
+  const icao = icaoInput.value.trim().toUpperCase();
+  if (icao.length !== 4) return;
+
+  resultBox.style.display = "block";
+  resultBox.innerHTML = `
+    <div class="section-title">📢 NOTAM</div>
+
+    <div class="section-raw">
+      <strong>Service unavailable</strong><br><br>
+      Official NOTAMs are not provided by the AviationWeather API.<br><br>
+      FAA NOTAM API integration planned.
+    </div>
+
+    <small>Training use only</small>
+  `;
+};
+
+
 
 
   /* ======================================================
