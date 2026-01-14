@@ -658,7 +658,10 @@ if (windMatch) {
 // ==============================
 let decodedVisibility = "";
 
- const visMatch = raw.match(/\b(\d{4})\b/);
+const visMatch = raw.match(/\s(\d{4})(?=\s|$)/);
+
+
+
 
  let isLowVisibility = false;
 
@@ -870,6 +873,7 @@ if (
     <strong>DECODED</strong><br>
     ${decodedTime ? `Time: ${decodedTime}<br>` : ""}
     ${decodedWind ? `Wind: ${decodedWind}<br>` : ""}
+    ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
     ${decodedClouds.length ? `Clouds: ${decodedClouds.join(", ")}<br>` : ""}
     ${decodedTemp ? `Temperature: ${decodedTemp}<br>` : ""}
     ${decodedDew ? `Dew point: ${decodedDew}<br>` : ""}
