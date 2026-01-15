@@ -244,6 +244,28 @@ h1 {
   line-height: 1.4;
 }
 
+/* ===============================
+   VISIBILITY ALERT – ESTILO VISUAL 
+================================ */  
+
+#visibilityAlert {
+  display: none;           /* oculto por defecto */
+  margin-top: 10px;
+  padding: 10px;
+  text-align: center;
+  font-weight: bold;
+  color: #8e2a2a;
+  background: #fdecea;
+  border: 1px solid #e0b4b4;
+  border-radius: 8px;
+}
+
+#visibilityAlert small {
+  font-size: 11px;
+  font-weight: normal;
+  line-height: 1.4;
+}
+
 
 /* ===============================
    FORMULA HELPER (TOOLTIPS)
@@ -417,6 +439,22 @@ h1 {
   </small>
 </div>
 
+<div id="visibilityAlert">
+  ⚠️ LOW VISIBILITY<br>
+  <small>
+    Reported visibility below standard VFR minima.<br>
+    Awareness only.
+  </small>
+</div>
+
+
+
+ <!-- ======================================================
+      ALERTA DE VISIBILIDAD BAJA (VISIBILITY ALERT)
+====================================================== -->
+
+
+
 
 <!-- Aquí se muestran los resultados -->
 <div id="result" class="result-box"></div>
@@ -464,7 +502,15 @@ icaoInput.addEventListener("input", function () {
   if (icaoInput.value.trim() === "") {
     resultBox.innerHTML = "";
     resultBox.style.display = "none";
+
+    const gustBox = document.getElementById("gustAlert");
+    if (gustBox) gustBox.style.display = "none";
+
+    const visAlertBox = document.getElementById("visibilityAlert");
+    if (visAlertBox) visAlertBox.style.display = "none";
   }
+
+
 });
 
 const timeBox = document.getElementById("localTime");
@@ -610,11 +656,18 @@ if (icao === "DYLN") {
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim().split("\n")[0];
 // 🔴 TEST METAR (solo para pruebas visuales)
-    //const raw = "METAR MRPV 151900Z 06012KT 9999 WS ALL RWY SCT020 A2995";
+    // const raw = "METAR MROC 151900Z 09018G32KT 2000 TSRA FG SCT008 BKN012 OVC080 WS ALL RWY 26/24 A2992";
+
 
     
     const airportData = airportRunways[icao];
     const airportElevation = airportData?.elevation ?? null;
+
+// ==============================
+// RESET VISIBILITY ALERT (SIEMPRE)
+// ==============================
+const visAlertBox = document.getElementById("visibilityAlert");
+if (visAlertBox) visAlertBox.style.display = "none";
 
 
     // ==============================
@@ -694,10 +747,19 @@ const visMatch = raw.match(/\s(\d{4})(?=\s|$)/);
 if (visMatch) {
   const visMeters = parseInt(visMatch[1], 10);
 
-  if (visMeters !== 9999 && visMeters <= 3000) {
+   if (visMeters !== 9999 && visMeters <= 3000) {
     isLowVisibility = true;
   }
 }
+
+// ==============================
+// LOW VISIBILITY ALERT
+// ==============================
+
+if (visAlertBox && isLowVisibility) {
+  visAlertBox.style.display = "block";
+}
+
 
 
 if (visMatch) {
