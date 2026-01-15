@@ -323,6 +323,18 @@ h1 {
   font-weight: bold;
 }
 
+.metar-ra {
+  color: #3498db;   /* azul lluvia */
+  font-weight: bold;
+} 
+
+.metar-ws {
+  color: #c0392b;   /* rojo advertencia */
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+
 
 /* ===============================
    TAF HIGHLIGHT (RAW ONLY) colores
@@ -521,26 +533,40 @@ function highlightMetar(raw) {
       `<span class="metar-gust">$&</span>`
     )
 
-    // Thunderstorms (más específicos primero)
+    // Wind Shear (highest priority)
+    .replace(/\bWS\s+(RWY\d{2}|ALL RWY)\b/g,
+      `<span class="metar-ws">$&</span>`
+    )
+
+    // Thunderstorms (must be BEFORE RA)
     .replace(/\b(VCTS|TSRA|TSGR|TS)\b/g,
       `<span class="metar-ts">$1</span>`
     )
 
-    // Fog (FG)
+    // Showers
+    .replace(/\b(SHRA|SHSN)\b/g,
+      `<span class="metar-ra">$1</span>`
+    )
+
+    // Rain (after TS!)
+    .replace(/\b(\+RA|-RA|RA)\b/g,
+      `<span class="metar-ra">$1</span>`
+    )
+
+    // Fog
     .replace(/\bFG\b/g,
       `<span class="metar-fg">FG</span>`
     )
 
-    // CAVOK (muy genérico → al final)
+    // CAVOK
     .replace(/\bCAVOK\b/g,
       `<span class="metar-cavok">CAVOK</span>`
     )
-    // Low ceiling in RAW (BKN / OVC ≤ 1000 ft)
-   .replace(/\b(BKN|OVC)(00[0-9]|0[0-9]{2}|100)\b/g,
-     match => `<span class="metar-ceiling-low">${match}</span>`
-);
 
-    
+    // Low ceiling
+    .replace(/\b(BKN|OVC)(00[0-9]|0[0-9]{2}|100)\b/g,
+      `<span class="metar-ceiling-low">$&</span>`
+    );
 }
 
 
@@ -584,7 +610,7 @@ if (icao === "DYLN") {
     const r = await fetch(`https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`);
     const raw = (await r.text()).trim().split("\n")[0];
 // 🔴 TEST METAR (solo para pruebas visuales)
-  //const raw = "METAR MROC 151900Z 08018G28KT 0800 FG TSRA BKN005 OVC020 A2992";
+    //const raw = "METAR MRPV 151900Z 06012KT 9999 WS ALL RWY SCT020 A2995";
 
     
     const airportData = airportRunways[icao];
