@@ -542,19 +542,19 @@ setInterval(updateLocalTime, 1000);
   const airportRunways = {
   MROC:{
     elevation: 3021,
-    runways:[{id:"07",h:70},{id:"25",h:250}]
+    runways:[{id:"07",h:71},{id:"25",h:251}]
   },
   MRPV:{
     elevation: 3287,
-    runways:[{id:"10",h:100},{id:"28",h:280}]
+    runways:[{id:"10",h:98},{id:"28",h:278}]
   },
   MRLB:{
-    elevation: 272,
-    runways:[{id:"07",h:70},{id:"25",h:250}]
+    elevation: 270,
+    runways:[{id:"07",h:71},{id:"25",h:251}]
   },
   MRLM:{
     elevation: 7,
-    runways:[{id:"05",h:50},{id:"23",h:230}]
+    runways:[{id:"14",h:148},{id:"32",h:328}]
   }
 };
    
@@ -768,9 +768,13 @@ if (visMatch) {
   if (visMeters === 9999) {
     decodedVisibility = "10 km or more";
   } else {
-    decodedVisibility = `${visMeters / 1000} km`;
+    const km = visMeters / 1000;
+    decodedVisibility = Number.isInteger(km)
+      ? `${km} km`
+      : `${km.toFixed(1)} km`;
   }
 }
+
 
 // ==============================
 // METAR DECODED – CLOUDS
@@ -1176,75 +1180,115 @@ if (gustBox) gustBox.style.display = "none";
 
   function buildWindComponent(raw, icao) {
 
-  if(!airportRunways[icao]){
-  return "";
-}
+  if (!airportRunways[icao]) {
+    return "";
+  }
 
+  const w = raw.match(/(VRB|\d{3})(\d{2,3})(G\d{2,3})?KT/);
+  if (!w) {
+    return `<div class="section-wind"><strong>WIND COMPONENT</strong><br>Wind data not available</div>`;
+  }
 
-    const w = raw.match(/(VRB|\d{3})(\d{2,3})(G\d{2,3})?KT/);
-    if (!w) {
-      return `<div class="section-wind"><strong>WIND COMPONENT</strong><br>Wind data not available</div>`;
-    }
+  const isVRB = w[1] === "VRB";
+  const windDir = isVRB ? null : parseInt(w[1], 10);
+  const windSpd = parseInt(w[2], 10);
 
-    const isVRB = w[1] === "VRB";
-    const windDir = isVRB ? null : parseInt(w[1]);
-    const windSpd = parseInt(w[2]);
+  let bestRunway = null;
+  let bestScore = -Infinity;
 
-    let html = `<div class="section-wind">
-  <strong>WIND COMPONENT</strong>
-  <span class="formula-info">ⓘ
-    <span class="formula-tooltip">
-      Wind component (approximation)
+  let html = `<div class="section-wind">
+    <strong>WIND COMPONENT</strong>
+    <span class="formula-info">ⓘ
+      <span class="formula-tooltip">
+        Wind component (approximation)
 
-      Headwind = Wind × cos(angle)
-      Crosswind = Wind × sin(angle)
+        Headwind = Wind × cos(angle)
+        Crosswind = Wind × sin(angle)
 
-      Steady wind only
-      Gusts not used in calculations
+        Steady wind only
+        Gusts not used in calculations
 
-      Awareness only
-    </span>
-  </span><br>`;
+        Awareness only
+      </span>
+    </span><br>`;
 
+  airportRunways[icao].runways.forEach(r => {
 
+    let head = 0;
+    let cross = 0;
 
-    airportRunways[icao].runways.forEach(r => {
-
-      html += `RWY ${r.id}<br>`;
-
-      if (isVRB) {
-        html += `Wind: Variable ${windSpd} kt<br>`;
-        html += `Crosswind: variable<br><br>`;
-        return;
-      }
-
+    if (!isVRB) {
       let diff = windDir - r.h;
       if (diff > 180) diff -= 360;
       if (diff < -180) diff += 360;
 
-      let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
-      let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
+      head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
+      cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
 
-      let side = cross > 0 ? "from the RIGHT" : cross < 0 ? "from the LEFT" : "";
+      const headwind = head > 0 ? head : 0;
+      const tailwind = head < 0 ? Math.abs(head) : 0;
+      const crosswind = Math.abs(cross);
 
-      if (head > 0) {
-        html += `<span class="hw">Headwind</span>: ${head} kt<br>`;
-      } else if (head < 0) {
-        html += `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
-      } else {
-        html += `Headwind: 0 kt<br>`;
+      const score = headwind - (crosswind * 0.5) - (tailwind * 2);
+
+      if (score > bestScore) {
+        bestScore = score;
+        bestRunway = r.id;
       }
+    }
+  });
+
+  airportRunways[icao].runways.forEach(r => {
+
+    const isBest = r.id === bestRunway && !isVRB;
+
+    html += `<strong>${isBest ? "⭐" : ""}RWY ${r.id}${isBest ? "⭐(Most favorable)" : ""}</strong><br>`;
+
+    if (isVRB) {
+      html += `Wind: Variable ${windSpd} kt<br>`;
+      html += `Crosswind: variable<br><br>`;
+      return;
+    }
+
+    let diff = windDir - r.h;
+    if (diff > 180) diff -= 360;
+    if (diff < -180) diff += 360;
+
+    let head = Math.round(windSpd * Math.cos(diff * Math.PI / 180));
+    let cross = Math.round(windSpd * Math.sin(diff * Math.PI / 180));
+
+    let side = cross > 0 ? "from the RIGHT" : cross < 0 ? "from the LEFT" : "";
+
+    if (head > 0) {
+      html += `<span class="hw">Headwind</span>: ${head} kt<br>`;
+    } else if (head < 0) {
+      html += `<span class="tw-danger">Tailwind</span>: ${Math.abs(head)} kt<br>`;
+    } else {
+      html += `Headwind: 0 kt<br>`;
+    }
 
     if (Math.abs(cross) <= 2) {
-  html += `Crosswind: insignificant<br><br>`;
-} else {
-  html += `<span class="cw-warning">Crosswind</span>: ${Math.abs(cross)} kt (${side})<br><br>`;
+      html += `Crosswind: insignificant<br><br>`;
+    } else {
+      html += `<span class="cw-warning">Crosswind</span>: ${Math.abs(cross)} kt (${side})<br><br>`;
+    }
+
+  });
+
+  if (!isVRB) {
+    html += `<small>
+      📝 Most favorable runway based on wind component only.<br>
+     ℹ️ Not ATC assigned runway.
+    </small>`;
+  } else {
+    html += `<small>
+      Wind variable — most favorable runway not determined.
+    </small>`;
+  }
+
+  return html + `</div>`;
 }
 
-    });
-
-    return html + `<small>Training use only</small></div>`;
-  }
 
 });
 </script>
