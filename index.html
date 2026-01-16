@@ -113,6 +113,13 @@ h1 {
   text-align:center;
 }
 
+.pdf-links {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 14px;
+}
+
 
 /* ======================================================
    CAJA DE RESULTADOS (METAR / TAF / WIND)
@@ -197,10 +204,10 @@ h1 {
 .codes-link {
   display:inline-block;
   margin-top:12px;
-  padding:6px 10px;
+  padding:8px 14px;
   border:1px solid #8ecae6;
   border-radius:8px;
-  font-size:13px;
+  font-size:10px;
   color:#355f5b;
   text-decoration:none;
   background:#ffffff;
@@ -392,6 +399,16 @@ h1 {
   font-weight: bold;
 }
 
+@media (max-width: 360px) {
+  .pdf-links {
+    gap: 6px;
+  }
+
+  .codes-link {
+    font-size: 9px;
+    padding: 7px 10px;
+  }
+}
 
 
 
@@ -459,12 +476,20 @@ h1 {
 <!-- Aquí se muestran los resultados -->
 <div id="result" class="result-box"></div>
 
-<!-- Link a PDF de códigos -->
-<div style="text-align:center;">
+<!-- Link a PDF de códigos -->                                             
+
+<div class="pdf-links">
   <a class="codes-link" href="metar_taf_codes.pdf" target="_blank">
     📄 METAR &amp; TAF Codes (PDF)
   </a>
+
+  <a class="codes-link" href="icao_dictionary.pdf" target="_blank">
+    📄 ICAO DICTIONARY (PDF)
+  </a>
+
 </div>
+
+
 
 <!-- Firma -->
 <div class="footer">
