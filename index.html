@@ -228,6 +228,27 @@ h1 {
   color: #f1c40f; /* amarillo */
   font-weight: bold;
 }
+
+.best-runway {
+  color: #6fa89a;        /* verde azulado suave */
+  font-weight: 600;
+}
+
+.best-runway .star {
+  color: #b8cfd6;        /* estrella MUY suave */
+  font-size: 0.9em;     /* un poquito más pequeña */
+  margin-right: 4px;
+}
+
+.best-runway small {
+  font-weight: normal;
+  color: #6b7c85;
+}
+
+.best-runway {
+  margin-bottom: 4px;
+}
+
   
 /* ===============================
    GUST ALERT – ESTILO VISUAL
@@ -375,7 +396,7 @@ h1 {
 }
 
 .taf-tempo {
-  color: #f1c40f; /* amarillo */
+  color: #e28800; /* amarillo */
   font-weight: bold;
 }
 
@@ -1267,7 +1288,17 @@ if (gustBox) gustBox.style.display = "none";
 
     const isBest = r.id === bestRunway && !isVRB;
 
-    html += `<strong>${isBest ? "⭐" : ""}RWY ${r.id}${isBest ? "⭐(Most favorable)" : ""}</strong><br>`;
+ html += isBest
+  ? `<div class="best-runway">
+       <span class="star">★</span>RWY ${r.id}
+       <small>
+         <span class="star">★</span> most favorable
+       </small>
+     </div>`
+  : `<strong>RWY ${r.id}</strong><br>`;
+
+
+
 
     if (isVRB) {
       html += `Wind: Variable ${windSpd} kt<br>`;
