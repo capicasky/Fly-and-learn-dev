@@ -1289,6 +1289,14 @@ if (gustBox) gustBox.style.display = "none";
     const isBest = r.id === bestRunway && !isVRB;
 
  
+html += isBest
+  ? `<div class="best-runway">
+       <span class="star">★</span>RWY ${r.id}
+       <small>
+         <span class="star">★</span> most favorable
+       </small>
+     </div>`
+  : `<div class="best-runway">RWY ${r.id}</div>`;
 
 
 
