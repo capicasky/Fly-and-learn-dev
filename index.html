@@ -1009,7 +1009,7 @@ if (
 
   html += `<div class="section-raw">
     <strong>DECODED</strong><br>
-    ${decodedTime ? `Time: ${decodedTime}<br>` : ""}
+    ${decodedTime ? `Date/Time(UTC): ${decodedTime}<br>` : ""}
     ${decodedWind ? `Wind: ${decodedWind}<br>` : ""}
     ${decodedVisibility ? `Visibility: ${decodedVisibility}<br>` : ""}
     ${decodedClouds.length ? `Clouds: ${decodedClouds.join(", ")}<br>` : ""}
@@ -1288,17 +1288,7 @@ if (gustBox) gustBox.style.display = "none";
 
     const isBest = r.id === bestRunway && !isVRB;
 
- html += isBest
-  ? `<div class="best-runway">
-       <span class="star">★</span>RWY ${r.id}
-       <small>
-         <span class="star">★</span> most favorable
-       </small>
-     </div>`
-  : `<div class="best-runway">
-       RWY ${r.id}
-     </div>`;
-
+ 
 
 
 
