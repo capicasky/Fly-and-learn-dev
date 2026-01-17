@@ -229,6 +229,12 @@ h1 {
   font-weight: bold;
 }
 
+.most-favorable {
+  color: #4d72b6;      /* verde azulado Fly & Learn */
+  font-weight: 600;
+}
+
+
 .best-runway {
   color: #6fa89a;        /* verde azulado suave */
   font-weight: 600;
@@ -1293,8 +1299,10 @@ html += isBest
   ? `<div class="best-runway">
        <span class="star">★</span>RWY ${r.id}
        <small>
-         <span class="star">★</span> most favorable
-       </small>
+  <span class="star">★</span>
+  <span class="most-favorable">Most Favorable</span>
+</small>
+
      </div>`
   : `<div class="best-runway">RWY ${r.id}</div>`;
 
